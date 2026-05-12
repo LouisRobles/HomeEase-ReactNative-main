@@ -1,0 +1,51 @@
+import React from "react";
+import { View, Text } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import PrimaryButton from "../../../../components/ui/PrimaryButton";
+import OutlinedButton from "../../../../components/ui/OutlinedButton";
+import { useBookingStore } from "../../../../store/bookingStore";
+
+export default function PaymentSuccessScreen() {
+  const router = useRouter();
+  const booking = useBookingStore((s) => s.selectedBooking);
+
+  const amountLabel = booking ? `₱${booking.amount.toFixed(2)}` : "₱400.00";
+  const referenceLabel = booking
+    ? `${booking.id} · ${booking.paymentMethod}`
+    : "TXN-004 · GCash";
+
+  return (
+    <SafeAreaView className="flex-1 bg-primary-white items-center justify-center px-8">
+      <View className="w-32 h-32 bg-success/20 rounded-full items-center justify-center mb-8">
+        <Ionicons name="checkmark-circle" size={80} color="#4CAF50" />
+      </View>
+      <Text className="text-success text-2xl font-bold text-center">
+        Payment Successful!
+      </Text>
+      <View className="bg-card rounded-2xl p-4 w-full mt-6">
+        <Text className="text-text-secondary text-sm">{amountLabel}</Text>
+        <Text className="text-primary font-semibold">{referenceLabel}</Text>
+        <Text className="text-text-muted text-xs mt-1">Mar 6, 2026</Text>
+      </View>
+      <View className="w-full mt-8 gap-3">
+        <OutlinedButton
+          label="View Booking"
+          onPress={() => {
+            if (booking) {
+              router.push(`/(client)/booking/${booking.id}`);
+            } else {
+              router.push("/(client)/booking");
+            }
+          }}
+        />
+        <PrimaryButton
+          label="Go to Home"
+          fullWidth
+          onPress={() => router.replace("/(client)/home")}
+        />
+      </View>
+    </SafeAreaView>
+  );
+}

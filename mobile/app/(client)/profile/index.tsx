@@ -1,0 +1,138 @@
+import React, { useRef } from "react";
+import { View, Text, ScrollView, Pressable } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import VerificationBanner from "../../../components/ui/VerificationBanner";
+import ImageSourcePickerBottomSheet from "../../../components/bottom-sheets/ImageSourcePickerBottomSheet";
+import LogoutConfirmationModal from "../../../components/modals/LogoutConfirmationModal";
+import { useState } from "react";
+import type { BottomSheetHandle } from "../../../components/bottom-sheets/BottomSheetWrapper";
+
+const MENU_GROUPS = [
+  [
+    { label: "My Reviews", path: "/(client)/profile/reviews" },
+    { label: "Manage Addresses", path: "/(client)/profile/addresses" },
+    { label: "Transaction History", path: "/(client)/profile/transactions" },
+  ],
+  [
+    { label: "Change Password", path: "/(client)/profile/change-password" },
+    {
+      label: "Notification Preferences",
+      path: "/(client)/profile/notification-preferences",
+    },
+    { label: "Privacy Settings", path: "/(client)/profile/privacy-settings" },
+  ],
+  [
+    { label: "Help & Support", path: "/(client)/profile/help-support" },
+    { label: "Contact Us", path: "/(client)/profile/contact-us" },
+    { label: "About the App", path: "/(client)/profile/about" },
+  ],
+  [
+    { label: "Terms and Conditions", path: "/(client)/profile/terms" },
+    { label: "Privacy Policy", path: "/(client)/profile/privacy-policy" },
+  ],
+];
+
+export default function ClientProfileScreen() {
+  const router = useRouter();
+  const imageSheetRef = useRef<BottomSheetHandle | null>(null);
+  const [logoutVisible, setLogoutVisible] = useState(false);
+
+  return (
+    <SafeAreaView className="flex-1 bg-primary-white">
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ paddingBottom: 24 }}
+      >
+        <View className="bg-card rounded-2xl p-5 mx-4 mt-4">
+          <View className="flex-row items-center">
+            <View className="w-20 h-20 bg-accent rounded-full items-center justify-center">
+              <Ionicons name="person" size={40} color="#FFFFFF" />
+            </View>
+            <Pressable
+              className="absolute bottom-0 left-14 w-8 h-8 bg-card-light rounded-full items-center justify-center"
+              onPress={() => imageSheetRef.current?.expand()}
+            >
+              <Ionicons name="camera" size={16} color="#FFFFFF" />
+            </Pressable>
+            <View className="ml-4 flex-1">
+              <Text className="text-primary font-bold text-xl">
+                Carlo Mendoza
+              </Text>
+              <Text className="text-text-secondary text-sm">
+                carlo@email.com
+              </Text>
+              <Pressable
+                className="mt-2"
+                onPress={() => router.push("/(client)/profile/edit")}
+              >
+                <Text className="text-accent font-semibold text-sm">
+                  Edit Profile
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+
+        <View className="mx-4 mt-3">
+          <VerificationBanner
+            isVerified={false}
+            onVerifyPress={() => router.push("/(kyc)/landing")}
+          />
+        </View>
+
+        {MENU_GROUPS.map((group, gi) => (
+          <View
+            key={gi}
+            className="bg-card rounded-2xl mx-4 mt-3 overflow-hidden"
+          >
+            {group.map((item) => (
+              <Pressable
+                key={item.label}
+                className="flex-row items-center py-4 px-4 border-b border-divider last:border-0"
+                onPress={() => router.push(item.path as any)}
+              >
+                <Text className="text-primary flex-1">{item.label}</Text>
+                <Ionicons name="chevron-forward" size={20} color="#A0A8D0" />
+              </Pressable>
+            ))}
+          </View>
+        ))}
+
+        <View className="bg-card rounded-2xl mx-4 mt-3 overflow-hidden">
+          <Pressable
+            className="flex-row items-center py-4 px-4"
+            onPress={() => setLogoutVisible(true)}
+          >
+            <Text className="text-error flex-1 font-semibold">Log Out</Text>
+            <Ionicons name="chevron-forward" size={20} color="#EF4444" />
+          </Pressable>
+          <Pressable
+            className="flex-row items-center py-4 px-4 border-t border-divider"
+            onPress={() => router.push("/(client)/profile/delete-account")}
+          >
+            <Text className="text-error flex-1 font-semibold">
+              Delete Account
+            </Text>
+            <Ionicons name="chevron-forward" size={20} color="#EF4444" />
+          </Pressable>
+        </View>
+      </ScrollView>
+      <ImageSourcePickerBottomSheet
+        innerRef={imageSheetRef}
+        onSelect={(uri) => {
+          // Handle image selection (profile photo upload)
+        }}
+      />
+      <LogoutConfirmationModal
+        visible={logoutVisible}
+        onConfirm={() => {
+          setLogoutVisible(false);
+          router.replace("/landing");
+        }}
+        onCancel={() => setLogoutVisible(false)}
+      />
+    </SafeAreaView>
+  );
+}

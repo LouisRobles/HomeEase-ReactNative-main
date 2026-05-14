@@ -26,7 +26,14 @@ export default function PaymentScreen() {
             ? "Cash"
             : null;
 
-  const amount = 400; // Mock amount aligned with other booking screens
+  const BASE_AMOUNT = 400;
+  const TAX_RATE = 0.12;
+  const taxAmount = parseFloat((BASE_AMOUNT * TAX_RATE).toFixed(2));
+  const serviceFee = parseFloat((BASE_AMOUNT * 0.1).toFixed(2));
+  const tip = draft.tip ?? 0;
+  const total = parseFloat(
+    (BASE_AMOUNT + taxAmount + serviceFee + tip).toFixed(2),
+  );
 
   const handleSubmit = async () => {
     if (!method) {
@@ -47,7 +54,7 @@ export default function PaymentScreen() {
 
     try {
       setSubmitting(true);
-      await processPayment(method, amount);
+      await processPayment(method, total);
       router.replace("/(client)/booking/payment/success");
     } catch (e) {
       Alert.alert(
@@ -81,11 +88,32 @@ export default function PaymentScreen() {
           <Text className="text-text-secondary text-sm">
             Date: {draft.date ?? "Date"} · Time: {draft.time ?? "Time"}
           </Text>
-          <View className="flex-row justify-between items-center mt-3">
-            <Text className="text-text-secondary text-sm">Total Amount</Text>
-            <Text className="text-accent font-bold text-lg">
-              ₱{amount.toFixed(2)}
-            </Text>
+          <View className="mt-3">
+            <View className="flex-row justify-between items-center mb-1">
+              <Text className="text-text-secondary text-sm">Subtotal</Text>
+              <Text className="text-primary text-sm">₱{BASE_AMOUNT}.00</Text>
+            </View>
+            <View className="flex-row justify-between items-center mb-1">
+              <Text className="text-text-secondary text-sm">VAT (12%)</Text>
+              <Text className="text-primary text-sm">₱{taxAmount}</Text>
+            </View>
+            <View className="flex-row justify-between items-center mb-1">
+              <Text className="text-text-secondary text-sm">
+                Platform Fee (10%)
+              </Text>
+              <Text className="text-primary text-sm">₱{serviceFee}</Text>
+            </View>
+            {tip > 0 && (
+              <View className="flex-row justify-between items-center mb-1">
+                <Text className="text-text-secondary text-sm">Tip</Text>
+                <Text className="text-primary text-sm">₱{tip}.00</Text>
+              </View>
+            )}
+            <View className="border-b border-divider my-2" />
+            <View className="flex-row justify-between items-center">
+              <Text className="text-primary font-bold text-base">Total</Text>
+              <Text className="text-accent font-bold text-lg">₱{total}</Text>
+            </View>
           </View>
         </View>
 

@@ -28,8 +28,12 @@ export const RequestCard: React.FC<Props> = ({ request, onPress }) => {
         <Ionicons name="person-circle" size={40} color="#A0A8D0" />
       </View>
       <View className="flex-1">
-        <Text className="text-primary font-bold">{request.client}</Text>
-        <Text className="text-primary text-xs">{request.service}</Text>
+        <Text className="text-primary font-bold" numberOfLines={1}>
+          {request.client}
+        </Text>
+        <Text className="text-primary text-xs" numberOfLines={1}>
+          {request.service}
+        </Text>
         <Text className="text-text-muted text-xs">{request.date}</Text>
       </View>
       <View className="items-end">

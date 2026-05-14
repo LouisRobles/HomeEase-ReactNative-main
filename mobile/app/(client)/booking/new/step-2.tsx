@@ -41,6 +41,15 @@ export default function BookingStep2Screen() {
           steps={["Service", "Schedule", "Payment"]}
           currentStep={1}
         />
+        <View className="bg-card rounded-2xl p-4 mt-4 mb-2">
+          <Text className="text-primary font-bold mb-2">Service Summary</Text>
+          <Text className="text-text-secondary text-sm">{draft.category}</Text>
+          {draft.estimatedPrice > 0 && (
+            <Text className="text-accent text-sm font-semibold mt-1">
+              Estimated: ₱{draft.estimatedPrice}
+            </Text>
+          )}
+        </View>
         <Text className="text-primary font-bold text-lg mt-4">Schedule</Text>
 
         <Text className="text-text-secondary text-sm mb-1 mt-3">Date</Text>

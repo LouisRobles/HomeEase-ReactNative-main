@@ -1,5 +1,12 @@
-import React, { useState } from "react";
-import { View, Text, ScrollView, Pressable, Alert } from "react-native";
+import React, { useState, useRef } from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  Pressable,
+  Alert,
+  TextInput,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import InputField from "../../components/ui/InputField";
@@ -20,6 +27,12 @@ export default function SignUpScreen() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const fullNameRef = useRef<TextInput>(null);
+  const emailRef = useRef<TextInput>(null);
+  const phoneRef = useRef<TextInput>(null);
+  const passwordRef = useRef<TextInput>(null);
+  const confirmPasswordRef = useRef<TextInput>(null);
 
   const handleSignUp = async () => {
     if (
@@ -91,39 +104,54 @@ export default function SignUpScreen() {
         </View>
 
         <InputField
+          ref={fullNameRef}
           label="Full Name"
           value={fullName}
           onChangeText={setFullName}
           placeholder="Enter your full name"
+          returnKeyType="next"
+          onSubmitEditing={() => emailRef.current?.focus()}
         />
         <InputField
+          ref={emailRef}
           label="Email"
           value={email}
           onChangeText={setEmail}
           placeholder="Enter your email"
           keyboardType="email-address"
           autoCapitalize="none"
+          returnKeyType="next"
+          onSubmitEditing={() => phoneRef.current?.focus()}
         />
         <InputField
+          ref={phoneRef}
           label="Phone"
           value={phone}
           onChangeText={setPhone}
           placeholder="Enter your phone number"
           keyboardType="phone-pad"
+          returnKeyType="next"
+          onSubmitEditing={() => passwordRef.current?.focus()}
         />
         <InputField
+          ref={passwordRef}
           label="Password"
           value={password}
           onChangeText={setPassword}
           placeholder="Create a password"
           secureTextEntry
+          returnKeyType="next"
+          onSubmitEditing={() => confirmPasswordRef.current?.focus()}
         />
         <InputField
+          ref={confirmPasswordRef}
           label="Confirm Password"
           value={confirmPassword}
           onChangeText={setConfirmPassword}
           placeholder="Confirm your password"
           secureTextEntry
+          returnKeyType="done"
+          onSubmitEditing={handleSignUp}
         />
 
         <Pressable

@@ -5,6 +5,7 @@ import { useRouter } from "expo-router";
 import ScreenHeader from "../../../../components/ui/ScreenHeader";
 import StepperHorizontal from "../../../../components/steppers/StepperHorizontal";
 import PrimaryButton from "../../../../components/ui/PrimaryButton";
+import InputField from "../../../../components/ui/InputField";
 import { useBookingStore } from "../../../../store/bookingStore";
 import PaymentMethodBottomSheet from "../../../../components/bottom-sheets/PaymentMethodBottomSheet";
 import GenericConfirmationModal from "../../../../components/modals/GenericConfirmationModal";
@@ -19,6 +20,9 @@ export default function BookingStep3Screen() {
   );
   const [confirmVisible, setConfirmVisible] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [tipAmount, setTipAmount] = useState<number>(0);
+  const [customTip, setCustomTip] = useState<string>("");
+  const [showCustomTip, setShowCustomTip] = useState(false);
   const paymentRef = useRef<BottomSheetHandle | null>(null);
 
   const paymentLabel =
@@ -31,6 +35,14 @@ export default function BookingStep3Screen() {
           : paymentMethod === "cash"
             ? "Cash"
             : null;
+
+  const BASE_AMOUNT = draft.estimatedPrice > 0 ? draft.estimatedPrice : 400;
+  const TAX_RATE = 0.12;
+  const taxAmount = parseFloat((BASE_AMOUNT * TAX_RATE).toFixed(2));
+  const serviceFee = parseFloat((BASE_AMOUNT * 0.1).toFixed(2));
+  const total = parseFloat(
+    (BASE_AMOUNT + taxAmount + serviceFee + tipAmount).toFixed(2),
+  );
 
   const handleConfirmBooking = () => {
     setConfirmVisible(true);
@@ -88,9 +100,98 @@ export default function BookingStep3Screen() {
           </Text>
         </Pressable>
 
-        <View className="flex-row justify-between items-center mt-6">
-          <Text className="text-primary font-bold">Total</Text>
-          <Text className="text-accent font-bold text-lg">₱400.00</Text>
+        <Text className="text-text-secondary text-sm mb-1 mt-4">Add a Tip</Text>
+        <View className="flex-row gap-2 flex-wrap mt-1">
+          {[0, 20, 50, 100].map((amount) => (
+            <Pressable
+              key={amount}
+              className={
+                tipAmount === amount
+                  ? "bg-accent rounded-xl px-4 py-2"
+                  : "bg-card rounded-xl px-4 py-2"
+              }
+              onPress={() => {
+                setTipAmount(amount);
+                setShowCustomTip(false);
+                setCustomTip("");
+                setDraft({ tip: amount });
+              }}
+            >
+              <Text
+                className={
+                  tipAmount === amount
+                    ? "text-primary font-semibold text-sm"
+                    : "text-text-secondary text-sm"
+                }
+              >
+                {amount === 0 ? "No Tip" : `₱${amount}`}
+              </Text>
+            </Pressable>
+          ))}
+          <Pressable
+            className={
+              showCustomTip
+                ? "bg-accent rounded-xl px-4 py-2"
+                : "bg-card rounded-xl px-4 py-2"
+            }
+            onPress={() => setShowCustomTip(true)}
+          >
+            <Text
+              className={
+                showCustomTip
+                  ? "text-primary font-semibold text-sm"
+                  : "text-text-secondary text-sm"
+              }
+            >
+              Custom
+            </Text>
+          </Pressable>
+        </View>
+
+        {showCustomTip && (
+          <View className="mt-3">
+            <InputField
+              label=""
+              value={customTip}
+              onChangeText={(value) => {
+                setCustomTip(value);
+                const parsedValue = parseFloat(value) || 0;
+                setTipAmount(parsedValue);
+                setDraft({ tip: parsedValue });
+              }}
+              placeholder="Enter custom amount"
+              keyboardType="numeric"
+            />
+          </View>
+        )}
+
+        <View className="bg-card rounded-2xl p-4 mt-6">
+          <Text className="text-primary font-bold mb-3">Order Summary</Text>
+          <View className="flex-row justify-between items-center mb-1">
+            <Text className="text-text-secondary text-sm">Service Fee</Text>
+            <Text className="text-primary text-sm">₱{BASE_AMOUNT}.00</Text>
+          </View>
+          <View className="flex-row justify-between items-center mb-1">
+            <Text className="text-text-secondary text-sm">VAT (12%)</Text>
+            <Text className="text-primary text-sm">₱{taxAmount}</Text>
+          </View>
+          <View className="flex-row justify-between items-center mb-1">
+            <Text className="text-text-secondary text-sm">
+              Platform Fee (10%)
+            </Text>
+            <Text className="text-primary text-sm">₱{serviceFee}</Text>
+          </View>
+          {tipAmount > 0 && (
+            <View className="flex-row justify-between items-center mb-1">
+              <Text className="text-text-secondary text-sm">Tip</Text>
+              <Text className="text-primary text-sm">₱{tipAmount}.00</Text>
+            </View>
+          )}
+          <View className="border-b border-divider my-2" />
+          <View className="flex-row justify-between items-center">
+            <Text className="text-primary font-bold text-base">Total</Text>
+            <Text className="text-accent font-bold text-lg">₱{total}</Text>
+          </View>
         </View>
 
         <View className="mt-8">

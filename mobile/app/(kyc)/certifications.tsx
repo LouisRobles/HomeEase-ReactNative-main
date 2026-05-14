@@ -28,7 +28,7 @@ export default function CertificationsScreen() {
   const handleSubmit = () => {
     // For demo, allow submission even without certs (workers can add later)
     // In production, require at least one certification
-    router.push("/(kyc)/pending");
+    router.push("/(kyc)/resume");
   };
 
   return (
@@ -36,10 +36,10 @@ export default function CertificationsScreen() {
       <ScreenHeader title="Upload Certifications" showBack />
       <View className="flex-1 px-4">
         <StepperHorizontal
-          steps={["ID Upload", "Selfie", "Certs"]}
+          steps={["ID", "Selfie", "Certs", "Resume"]}
           currentStep={2}
         />
-        <Text className="text-text-secondary text-sm mb-4">Step 3 of 3</Text>
+        <Text className="text-text-secondary text-sm mb-4">Step 3 of 4</Text>
 
         {certs.length === 0 ? (
           <EmptyState

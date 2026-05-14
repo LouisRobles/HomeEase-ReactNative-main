@@ -55,9 +55,15 @@ export default function MyBookingsScreen() {
               ? "Create a booking to get started"
               : `No ${activeTab.toLowerCase()} bookings`
           }
-          actionLabel={activeTab === "Pending" ? "New Booking" : undefined}
+          actionLabel={
+            activeTab === "Pending" || activeTab === "Completed"
+              ? activeTab === "Pending"
+                ? "New Booking"
+                : "Book Again"
+              : undefined
+          }
           onAction={
-            activeTab === "Pending"
+            activeTab === "Pending" || activeTab === "Completed"
               ? () => router.push("/(client)/booking/new/step-1")
               : undefined
           }
@@ -76,12 +82,14 @@ export default function MyBookingsScreen() {
         />
       )}
 
-      <Pressable
-        className="absolute bottom-6 right-6 w-14 h-14 bg-accent rounded-full items-center justify-center"
-        onPress={() => router.push("/(client)/booking/new/step-1")}
-      >
-        <Ionicons name="add" size={28} color="#FFFFFF" />
-      </Pressable>
+      {activeTab === "Pending" && (
+        <Pressable
+          className="absolute bottom-6 right-6 w-14 h-14 bg-accent rounded-full items-center justify-center"
+          onPress={() => router.push("/(client)/booking/new/step-1")}
+        >
+          <Ionicons name="add" size={28} color="#FFFFFF" />
+        </Pressable>
+      )}
     </SafeAreaView>
   );
 }

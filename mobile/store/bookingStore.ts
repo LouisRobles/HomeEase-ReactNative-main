@@ -24,6 +24,11 @@ export type DraftBooking = {
   instructions?: string;
   workerId: string | null;
   paymentMethod: string | null;
+  tip?: number;
+  taxRate?: number;
+  selectedTaskId: string | null;
+  selectedAddOnIds: string[];
+  estimatedPrice: number;
 };
 
 type BookingState = {
@@ -49,6 +54,11 @@ const initialDraft: DraftBooking = {
   instructions: '',
   workerId: null,
   paymentMethod: null,
+  tip: 0,
+  taxRate: 0.12,
+  selectedTaskId: null,
+  selectedAddOnIds: [],
+  estimatedPrice: 0,
 };
 
 export const useBookingStore = create<BookingState>((set) => ({

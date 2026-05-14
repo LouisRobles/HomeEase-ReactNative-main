@@ -1,5 +1,12 @@
-import React, { useState } from "react";
-import { View, Text, ScrollView, Pressable, Alert } from "react-native";
+import React, { useState, useRef } from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  Pressable,
+  Alert,
+  TextInput,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
@@ -18,6 +25,9 @@ export default function SignInScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const emailRef = useRef<TextInput>(null);
+  const passwordRef = useRef<TextInput>(null);
 
   const handleSignIn = async () => {
     if (!email.trim() || !password.trim()) {
@@ -65,19 +75,25 @@ export default function SignInScreen() {
         <Text className="text-text-secondary mb-6">Sign in to continue</Text>
 
         <InputField
+          ref={emailRef}
           label="Email"
           value={email}
           onChangeText={setEmail}
           placeholder="Enter your email"
           keyboardType="email-address"
           autoCapitalize="none"
+          returnKeyType="next"
+          onSubmitEditing={() => passwordRef.current?.focus()}
         />
         <InputField
+          ref={passwordRef}
           label="Password"
           value={password}
           onChangeText={setPassword}
           placeholder="Enter your password"
           secureTextEntry
+          returnKeyType="done"
+          onSubmitEditing={handleSignIn}
         />
 
         <Pressable

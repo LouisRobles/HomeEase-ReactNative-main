@@ -5,12 +5,15 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import StarRating from "../../../components/ui/StarRating";
 import LogoutConfirmationModal from "../../../components/modals/LogoutConfirmationModal";
+import { useAuthStore } from "../../../store/authStore";
 
 const MENU = [
   { label: "Edit Profile", path: "/(worker)/profile/edit" },
   { label: "My Skills & Services", path: "/(worker)/profile/skills" },
   { label: "Set Availability", path: "/(worker)/profile/availability" },
   { label: "My Certifications", path: "/(worker)/profile/certifications" },
+  { label: "My Reviews", path: "/(worker)/profile/reviews" },
+  { label: "Resume Analysis (AI)", path: "/(worker)/profile/resume-preview" },
   { label: "Payout Method", path: "/(worker)/earnings/payout" },
   { label: "Change Password", path: "/(worker)/profile/change-password" },
   {
@@ -23,6 +26,7 @@ const MENU = [
 
 export default function WorkerProfileScreen() {
   const router = useRouter();
+  const user = useAuthStore((s) => s.user);
   const [logoutVisible, setLogoutVisible] = useState(false);
 
   return (
@@ -35,7 +39,7 @@ export default function WorkerProfileScreen() {
           <View className="flex-1">
             <View className="flex-row items-center">
               <Text className="text-primary font-bold text-lg">
-                Dominic Paulo R. Dela Cruz
+                {user?.name || "Worker"}
               </Text>
               <View className="ml-1">
                 <Ionicons name="checkmark-circle" size={18} color="#4CAF50" />
@@ -77,7 +81,7 @@ export default function WorkerProfileScreen() {
           </View>
           <View className="bg-card-light rounded-xl p-3 mb-2 flex-row items-center">
             <Ionicons name="mail-outline" size={16} color="#4B5FD6" />
-            <Text className="text-primary ml-2">paulodelacruz28@gmail.com</Text>
+            <Text className="text-primary ml-2">{user?.email || "N/A"}</Text>
             <Text className="text-text-secondary text-xs ml-2">E-mail</Text>
           </View>
           <View className="bg-card-light rounded-xl p-3 flex-row items-center">

@@ -34,10 +34,10 @@ export default function SelfieScreen() {
         contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 40 }}
       >
         <StepperHorizontal
-          steps={["ID Upload", "Selfie", "Certs"]}
+          steps={["ID", "Selfie", "Certs", "Resume"]}
           currentStep={1}
         />
-        <Text className="text-text-secondary text-sm mb-4">Step 2 of 3</Text>
+        <Text className="text-text-secondary text-sm mb-4">Step 2 of 4</Text>
 
         {/* TODO: Replace with live camera feed using expo-camera */}
         <View className="w-full h-72 bg-card-dark rounded-2xl items-center justify-center mb-4">

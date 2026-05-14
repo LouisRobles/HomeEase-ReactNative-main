@@ -16,6 +16,23 @@ export const OtpInput: React.FC<Props> = ({
   const refs = useRef<(TextInput | null)[]>([]);
 
   const handleChange = (text: string, index: number) => {
+    // Handle paste: if text length > 1, it's a paste operation
+    if (text.length > 1) {
+      const digits = text.replace(/[^0-9]/g, "").slice(0, length);
+      // Spread pasted digits across slots starting from current index
+      const next = value.split("");
+      for (let i = 0; i < digits.length && index + i < length; i++) {
+        next[index + i] = digits[i];
+      }
+      const joined = next.join("").slice(0, length);
+      onChangeText(joined);
+      // Focus the last filled input
+      const lastFilledIndex = Math.min(index + digits.length - 1, length - 1);
+      setTimeout(() => refs.current[lastFilledIndex]?.focus(), 0);
+      return;
+    }
+
+    // Handle single digit input
     const digit = text.replace(/[^0-9]/g, "").slice(-1);
     const next = value.split("");
     next[index] = digit;
@@ -48,7 +65,7 @@ export const OtpInput: React.FC<Props> = ({
           onChangeText={(text) => handleChange(text, index)}
           onKeyPress={(e) => handleKeyPress(e, index)}
           keyboardType="number-pad"
-          maxLength={1}
+          maxLength={length}
           selectTextOnFocus
           placeholderTextColor="#6B7299"
         />

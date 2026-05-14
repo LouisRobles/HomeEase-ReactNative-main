@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import StarRating from "../ui/StarRating";
+import { workerActiveJobs } from "../../constants/dummyData";
 
 type Worker = {
   id: string;
@@ -29,8 +30,12 @@ export const WorkerCard: React.FC<Props> = ({ worker, onPress }) => {
         <Ionicons name="person-circle" size={40} color="#FFFFFF" />
       </View>
       <View className="flex-1">
-        <Text className="text-primary font-bold">{worker.name}</Text>
-        <Text className="text-primary text-xs">{worker.service}</Text>
+        <Text className="text-primary font-bold" numberOfLines={1}>
+          {worker.name}
+        </Text>
+        <Text className="text-primary text-xs" numberOfLines={1}>
+          {worker.service}
+        </Text>
         <View className="flex-row items-center mt-1">
           <StarRating rating={worker.rating} size={12} />
           <Text className="text-white text-xs ml-1">
@@ -53,6 +58,21 @@ export const WorkerCard: React.FC<Props> = ({ worker, onPress }) => {
             {worker.status === "available" ? "Available" : "Busy"}
           </Text>
         </View>
+        {worker.status !== "unavailable" &&
+          workerActiveJobs[worker.id] &&
+          workerActiveJobs[worker.id] > 0 && (
+            <Text
+              className={`${
+                workerActiveJobs[worker.id] === 1
+                  ? "text-warning text-xs mt-0.5"
+                  : "text-error text-xs mt-0.5"
+              }`}
+            >
+              {workerActiveJobs[worker.id] === 1
+                ? "1 active job"
+                : `${workerActiveJobs[worker.id]} active jobs`}
+            </Text>
+          )}
       </View>
     </Pressable>
   );

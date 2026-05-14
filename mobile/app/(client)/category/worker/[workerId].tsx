@@ -7,7 +7,8 @@ import ScreenHeader from "../../../../components/ui/ScreenHeader";
 import StarRating from "../../../../components/ui/StarRating";
 import ReviewCard from "../../../../components/cards/ReviewCard";
 import PrimaryButton from "../../../../components/ui/PrimaryButton";
-import { workers } from "../../../../constants/dummyData";
+import { workers, workerActiveJobs } from "../../../../constants/dummyData";
+import { useBookingStore } from "../../../../store/bookingStore";
 
 const MOCK_REVIEWS = [
   {
@@ -30,6 +31,7 @@ export default function WorkerProfileScreen() {
   const router = useRouter();
   const { workerId } = useLocalSearchParams<{ workerId: string }>();
   const worker = workers.find((w) => w.id === workerId);
+  const setDraft = useBookingStore((s) => s.setDraft);
 
   if (!worker) {
     return (
@@ -83,6 +85,23 @@ export default function WorkerProfileScreen() {
               </Text>
             </View>
           </View>
+          {(() => {
+            const activeJobs = workerActiveJobs[worker.id];
+            if (!activeJobs || activeJobs === 0) return null;
+            return (
+              <Text
+                className={`${
+                  activeJobs === 1
+                    ? "text-warning text-xs mt-1"
+                    : "text-error text-xs mt-1"
+                }`}
+              >
+                {activeJobs === 1
+                  ? "Currently handling 1 job"
+                  : `Currently handling ${activeJobs} jobs`}
+              </Text>
+            );
+          })()}
           <Text className="text-accent font-bold text-lg mt-2">
             ₱{worker.rate}/hr
           </Text>
@@ -131,12 +150,13 @@ export default function WorkerProfileScreen() {
         <PrimaryButton
           label="Book Now"
           fullWidth
-          onPress={() =>
-            router.push({
-              pathname: "/(client)/booking/new/step-1",
-              params: { workerId },
-            })
-          }
+          onPress={() => {
+            setDraft({
+              category: worker.service,
+              workerId: worker.id,
+            });
+            router.push("/(client)/booking/new/step-1");
+          }}
         />
       </View>
     </SafeAreaView>

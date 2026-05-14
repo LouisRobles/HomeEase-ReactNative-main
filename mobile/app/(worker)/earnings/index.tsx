@@ -4,7 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import TransactionItem from "../../../components/list-items/TransactionItem";
-import { transactions } from "../../../constants/dummyData";
+import { workerTransactions } from "../../../constants/dummyData";
 import { useWorkerStore } from "../../../store/workerStore";
 
 export default function EarningsScreen() {
@@ -39,6 +39,9 @@ export default function EarningsScreen() {
               ₱{totalEarnings.toFixed(2)}
             </Text>
           </View>
+          <Text className="text-text-muted text-xs mt-1">
+            After 10% platform fee
+          </Text>
           <View className="flex-row gap-2 mt-3">
             <View className="flex-1 bg-card-dark rounded-xl p-3">
               <Text className="text-text-secondary text-xs">
@@ -72,7 +75,7 @@ export default function EarningsScreen() {
 
         <View className="px-4 mt-4">
           <Text className="text-primary font-bold mb-2">Recent</Text>
-          {transactions.slice(0, 3).map((t) => (
+          {workerTransactions.slice(0, 3).map((t) => (
             <TransactionItem
               key={t.id}
               transaction={t}

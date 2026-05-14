@@ -46,6 +46,14 @@ export const workers = [
   }
 ] as const;
 
+export const workerActiveJobs: Record<string, number> = {
+  "w1": 1,
+  "w2": 0,
+  "w3": 2,
+  "w4": 1,
+  "w5": 0,
+};
+
 export const categories = [
   { id: 'plumbing', name: 'Plumbing', count: 24 },
   { id: 'electrical', name: 'Electrical', count: 18 },
@@ -65,7 +73,7 @@ export const bookings = [
     date: '2026-03-01',
     status: 'Pending',
     amount: 400,
-    paymentMethod: 'GCash'
+    paymentMethod: 'Cash'
   },
   {
     id: 'BK-002',
@@ -117,6 +125,33 @@ export const transactions = [
     id: 'TXN-003',
     bookingId: 'BK-002',
     amount: 500,
+    method: 'Maya',
+    status: 'Completed',
+    date: '2026-02-28'
+  }
+] as const;
+
+export const workerTransactions = [
+  {
+    id: 'TXN-001',
+    bookingId: 'BK-003',
+    amount: 540,
+    method: 'GCash',
+    status: 'Completed',
+    date: '2026-02-20'
+  },
+  {
+    id: 'TXN-002',
+    bookingId: 'BK-001',
+    amount: 360,
+    method: 'Cash',
+    status: 'Pending',
+    date: '2026-03-01'
+  },
+  {
+    id: 'TXN-003',
+    bookingId: 'BK-002',
+    amount: 450,
     method: 'Maya',
     status: 'Completed',
     date: '2026-02-28'
@@ -184,7 +219,7 @@ export const notifications = [
 
 export const jobRequests = [
   {
-    id: 'req1',
+    id: 'BK-001',
     client: 'Carlo Mendoza',
     service: 'House Cleaning',
     date: '2026-03-01',
@@ -192,7 +227,7 @@ export const jobRequests = [
     status: 'Pending'
   },
   {
-    id: 'req2',
+    id: 'BK-002',
     client: 'Liza Torres',
     service: 'Plumbing',
     date: '2026-03-02',

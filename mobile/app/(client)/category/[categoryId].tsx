@@ -35,7 +35,13 @@ export default function CategoryDetailScreen() {
       {categoryWorkers.length === 0 ? (
         <EmptyState
           title="No workers in this category"
-          subtitle="Try another category"
+          subtitle={
+            category
+              ? `No workers available for ${category.name} right now.`
+              : "Try another category"
+          }
+          actionLabel="Browse All Services"
+          onAction={() => router.push("/(client)/category")}
         />
       ) : (
         <FlatList

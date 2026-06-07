@@ -1,6 +1,7 @@
 import React, { useState, forwardRef } from "react";
 import { Text, TextInput, Pressable, TextInputProps, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { colors } from "../../constants";
 
 type Props = {
   label: string;
@@ -49,7 +50,7 @@ export const InputField = forwardRef<TextInput, Props>(
             value={value}
             onChangeText={onChangeText}
             placeholder={placeholder}
-            placeholderTextColor="#6B7299"
+            placeholderTextColor={colors.text.muted}
             secureTextEntry={isSecure}
             multiline={multiline}
             editable={editable}
@@ -63,7 +64,7 @@ export const InputField = forwardRef<TextInput, Props>(
               <Ionicons
                 name={isSecure ? "eye-off-outline" : "eye-outline"}
                 size={20}
-                color="#A0A8D0"
+                color={colors.text.muted}
               />
             </Pressable>
           )}

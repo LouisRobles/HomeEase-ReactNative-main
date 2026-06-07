@@ -9,6 +9,7 @@ import DangerButton from "../../../components/ui/DangerButton";
 import OutlinedButton from "../../../components/ui/OutlinedButton";
 import GenericConfirmationModal from "../../../components/modals/GenericConfirmationModal";
 import { useAuthStore } from "../../../store/authStore";
+import { colors } from "../../../constants";
 
 export default function DeleteAccountScreen() {
   const router = useRouter();
@@ -42,7 +43,7 @@ export default function DeleteAccountScreen() {
       <ScrollView contentContainerStyle={{ padding: 24 }}>
         <View className="items-center mb-6">
           <View className="w-24 h-24 bg-error/20 rounded-full items-center justify-center">
-            <Ionicons name="warning" size={60} color="#EF4444" />
+            <Ionicons name="warning" size={60} color={colors.error} />
           </View>
         </View>
         <Text className="text-error text-2xl font-bold text-center mb-4">

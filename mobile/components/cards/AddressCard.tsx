@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { colors } from "../../constants";
 
 type Address = {
   id: string;
@@ -24,7 +25,7 @@ export const AddressCard: React.FC<Props> = ({
 }) => {
   return (
     <View className="bg-card rounded-2xl p-4 mb-3 flex-row items-start">
-      <Ionicons name="location-outline" size={24} color="#FFFFFF" />
+      <Ionicons name="location-outline" size={24} color={colors.white} />
       <View className="flex-1 ml-3">
         <View className="flex-row items-center gap-2">
           <Text className="text-primary font-bold">{address.label}</Text>
@@ -37,10 +38,10 @@ export const AddressCard: React.FC<Props> = ({
         <Text className="text-primary text-sm mt-1">{address.address}</Text>
       </View>
       <Pressable onPress={onEdit} className="p-2">
-        <Ionicons name="pencil-outline" size={20} color="#FFFFFF" />
+        <Ionicons name="pencil-outline" size={20} color={colors.white} />
       </Pressable>
       <Pressable onPress={onDelete} className="p-2">
-        <Ionicons name="trash-outline" size={20} color="#EF4444" />
+        <Ionicons name="trash-outline" size={20} color={colors.error} />
       </Pressable>
     </View>
   );

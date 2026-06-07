@@ -3,7 +3,7 @@ import { View, Text, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import StatusBadge from "../ui/StatusBadge";
 import type { StatusType } from "../ui/StatusBadge";
-
+import { colors } from "../../constants";
 type Request = {
   id: string;
   client: string;
@@ -25,7 +25,7 @@ export const RequestCard: React.FC<Props> = ({ request, onPress }) => {
       onPress={onPress}
     >
       <View className="w-12 h-12 bg-card-light rounded-full items-center justify-center mr-3">
-        <Ionicons name="person-circle" size={40} color="#A0A8D0" />
+        <Ionicons name="person-circle" size={40} color={colors.text.muted} />
       </View>
       <View className="flex-1">
         <Text className="text-primary font-bold" numberOfLines={1}>

@@ -9,6 +9,7 @@ import PrimaryButton from "../../../components/ui/PrimaryButton";
 import OutlinedButton from "../../../components/ui/OutlinedButton";
 import GenericConfirmationModal from "../../../components/modals/GenericConfirmationModal";
 import { jobRequests, workerActiveJobs } from "../../../constants/dummyData";
+import { colors } from "../../../constants";
 
 export default function RequestDetailScreen() {
   const router = useRouter();
@@ -40,7 +41,11 @@ export default function RequestDetailScreen() {
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 100 }}>
         <View className="bg-card rounded-2xl p-4 mb-3 flex-row items-center">
           <View className="w-14 h-14 bg-card-light rounded-full items-center justify-center mr-3">
-            <Ionicons name="person-circle" size={48} color="#A0A8D0" />
+            <Ionicons
+              name="person-circle"
+              size={48}
+              color={colors.text.muted}
+            />
           </View>
           <View className="flex-1">
             <Text className="text-primary font-bold text-lg">
@@ -97,7 +102,11 @@ export default function RequestDetailScreen() {
             123 Rizal St., Hagonoy, Bulacan
           </Text>
           <View className="w-full h-32 bg-card-dark rounded-xl mt-3 items-center justify-center">
-            <Ionicons name="map-outline" size={40} color="#4B5FD6" />
+            <Ionicons
+              name="map-outline"
+              size={40}
+              color={colors.accent.DEFAULT}
+            />
             <Text className="text-text-muted text-xs mt-1">Map Preview</Text>
           </View>
         </View>

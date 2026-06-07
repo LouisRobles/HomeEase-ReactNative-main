@@ -6,6 +6,7 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import ScreenHeader from "../../../../components/ui/ScreenHeader";
 import InputField from "../../../../components/ui/InputField";
 import PrimaryButton from "../../../../components/ui/PrimaryButton";
+import { colors } from "../../../../constants";
 
 export default function AddressEditScreen() {
   const router = useRouter();
@@ -40,7 +41,11 @@ export default function AddressEditScreen() {
           ))}
         </View>
         <View className="w-full h-48 bg-card-dark rounded-2xl items-center justify-center mb-4">
-          <Ionicons name="map-outline" size={40} color="#4B5FD6" />
+          <Ionicons
+            name="map-outline"
+            size={40}
+            color={colors.accent.DEFAULT}
+          />
           <Text className="text-text-muted text-xs mt-2">
             Map Preview (install react-native-maps)
           </Text>

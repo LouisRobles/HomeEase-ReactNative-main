@@ -8,6 +8,7 @@ import ChatBubbleReceived from "../../../../components/chat/ChatBubbleReceived";
 import ImageSourcePickerBottomSheet from "../../../../components/bottom-sheets/ImageSourcePickerBottomSheet";
 import type { BottomSheetHandle } from "../../../../components/bottom-sheets/BottomSheetWrapper";
 import { useMessageStore, type Message } from "../../../../store/messageStore";
+import { colors } from "../../../../constants";
 
 // Worker-specific conversations
 const workerConversations = [
@@ -78,13 +79,13 @@ export default function WorkerChatScreen() {
     <SafeAreaView className="flex-1 bg-primary-white" edges={["top"]}>
       <View className="flex-row items-center px-4 py-3 border-b border-divider">
         <Pressable onPress={() => router.back()} className="mr-2">
-          <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
+          <Ionicons name="chevron-back" size={24} color={colors.white} />
         </Pressable>
         <Pressable
           className="w-9 h-9 bg-card-light rounded-full items-center justify-center mr-3"
           onPress={() => {}}
         >
-          <Ionicons name="person-circle" size={32} color="#A0A8D0" />
+          <Ionicons name="person-circle" size={32} color={colors.text.muted} />
         </Pressable>
         <View className="flex-1">
           <Text className="text-primary font-bold">
@@ -95,7 +96,7 @@ export default function WorkerChatScreen() {
           </Text>
         </View>
         <Pressable>
-          <Ionicons name="videocam-outline" size={24} color="#FFFFFF" />
+          <Ionicons name="videocam-outline" size={24} color={colors.white} />
         </Pressable>
       </View>
 
@@ -117,18 +118,18 @@ export default function WorkerChatScreen() {
           className="p-2 mr-2"
           onPress={() => imageSheetRef.current?.expand()}
         >
-          <Ionicons name="attach-outline" size={24} color="#A0A8D0" />
+          <Ionicons name="attach-outline" size={24} color={colors.text.muted} />
         </Pressable>
         <TextInput
           className="flex-1 bg-card rounded-full px-4 py-2 text-primary max-h-24"
           placeholder="Message..."
-          placeholderTextColor="#6B7299"
+          placeholderTextColor={colors.text.muted}
           value={input}
           onChangeText={setInput}
           multiline
         />
         <Pressable className="bg-accent rounded-full p-2 ml-2" onPress={send}>
-          <Ionicons name="send" size={20} color="#FFFFFF" />
+          <Ionicons name="send" size={20} color={colors.white} />
         </Pressable>
       </View>
       <ImageSourcePickerBottomSheet

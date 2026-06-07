@@ -3,6 +3,7 @@ import { View, Text, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import StatusBadge from "../ui/StatusBadge";
 import type { StatusType } from "../ui/StatusBadge";
+import { colors } from "../../constants";
 
 type Booking = {
   id: string;
@@ -26,7 +27,11 @@ export const BookingCard: React.FC<Props> = ({ booking, onPress }) => {
       onPress={onPress}
     >
       <View className="w-10 h-10 bg-accent/20 rounded-full items-center justify-center mr-3">
-        <Ionicons name="construct-outline" size={20} color="#4B5FD6" />
+        <Ionicons
+          name="construct-outline"
+          size={20}
+          color={colors.accent.DEFAULT}
+        />
       </View>
       <View className="flex-1">
         <Text className="text-primary font-bold">{booking.service}</Text>
@@ -41,7 +46,7 @@ export const BookingCard: React.FC<Props> = ({ booking, onPress }) => {
           ₱{booking.amount}
         </Text>
       </View>
-      <Ionicons name="chevron-forward" size={20} color="#A0A8D0" />
+      <Ionicons name="chevron-forward" size={20} color={colors.text.muted} />
     </Pressable>
   );
 };

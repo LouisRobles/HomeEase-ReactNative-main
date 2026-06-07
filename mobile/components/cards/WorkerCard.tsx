@@ -3,6 +3,7 @@ import { View, Text, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import StarRating from "../ui/StarRating";
 import { workerActiveJobs } from "../../constants/dummyData";
+import { colors } from "../../constants";
 
 type Worker = {
   id: string;
@@ -27,7 +28,7 @@ export const WorkerCard: React.FC<Props> = ({ worker, onPress }) => {
     >
       {/* TODO: Replace with actual worker photo */}
       <View className="w-12 h-12 bg-card-dark rounded-full items-center justify-center mr-3">
-        <Ionicons name="person-circle" size={40} color="#FFFFFF" />
+        <Ionicons name="person-circle" size={40} color={colors.white} />
       </View>
       <View className="flex-1">
         <Text className="text-primary font-bold" numberOfLines={1}>

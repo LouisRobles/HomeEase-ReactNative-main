@@ -236,3 +236,36 @@ export const jobRequests = [
   }
 ] as const;
 
+export const workerDocuments: Record<string, Array<{
+  id: string;
+  type: string;
+  uploadDate: string;
+  status: 'Approved' | 'Pending' | 'Rejected';
+}>> = {
+  "w1": [
+    { id: 'd1', type: 'Government ID', uploadDate: '2026-01-15', status: 'Approved' },
+    { id: 'd2', type: 'License/Certification', uploadDate: '2026-01-16', status: 'Approved' },
+    { id: 'd3', type: 'Insurance Certificate', uploadDate: '2026-01-20', status: 'Approved' }
+  ],
+  "w2": [
+    { id: 'd4', type: 'Government ID', uploadDate: '2026-02-10', status: 'Approved' },
+    { id: 'd5', type: 'License/Certification', uploadDate: '2026-02-11', status: 'Approved' },
+    { id: 'd6', type: 'Insurance Certificate', uploadDate: '2026-02-15', status: 'Pending' }
+  ],
+  "w3": [
+    { id: 'd7', type: 'Government ID', uploadDate: '2026-02-20', status: 'Approved' },
+    { id: 'd8', type: 'License/Certification', uploadDate: '2026-02-21', status: 'Rejected' },
+    { id: 'd9', type: 'Insurance Certificate', uploadDate: '2026-02-25', status: 'Pending' }
+  ],
+  "w4": [
+    { id: 'd10', type: 'Government ID', uploadDate: '2026-01-05', status: 'Approved' },
+    { id: 'd11', type: 'License/Certification', uploadDate: '2026-01-06', status: 'Approved' },
+    { id: 'd12', type: 'Insurance Certificate', uploadDate: '2026-01-10', status: 'Approved' }
+  ],
+  "w5": [
+    { id: 'd13', type: 'Government ID', uploadDate: '2026-03-01', status: 'Pending' },
+    { id: 'd14', type: 'License/Certification', uploadDate: '2026-03-02', status: 'Pending' },
+    { id: 'd15', type: 'Insurance Certificate', uploadDate: '2026-03-05', status: 'Approved' }
+  ]
+};
+

@@ -7,6 +7,8 @@ import ScreenHeader from "../../../../components/ui/ScreenHeader";
 import StepperHorizontal from "../../../../components/steppers/StepperHorizontal";
 import InputField from "../../../../components/ui/InputField";
 import PrimaryButton from "../../../../components/ui/PrimaryButton";
+import PriceBreakdownCard from "../../../../components/ui/PriceBreakdown";
+import AddOnsSelector from "../../../../components/ui/AddOnsSelector";
 import ServiceTypePickerBottomSheet from "../../../../components/bottom-sheets/ServiceTypePickerBottomSheet";
 import { useBookingStore } from "../../../../store/bookingStore";
 import { workers } from "../../../../constants/dummyData";
@@ -15,7 +17,9 @@ import {
   type ServiceTask,
   type ServiceConfig,
 } from "../../../../constants/serviceData";
+import { calculatePriceBreakdown } from "../../../../utils/pricing";
 import type { BottomSheetHandle } from "../../../../components/bottom-sheets/BottomSheetWrapper";
+import { colors } from "../../../../constants";
 
 export default function BookingStep1Screen() {
   const router = useRouter();
@@ -36,7 +40,7 @@ export default function BookingStep1Screen() {
     );
   }, [category]);
 
-  // Compute estimated price
+  // Compute estimated price using utility
   const computeEstimatedPrice = (
     task: ServiceTask,
     addOnIds: string[],
@@ -47,6 +51,15 @@ export default function BookingStep1Screen() {
       .reduce((sum, a) => sum + a.price, 0);
     return task.basePrice + addOnTotal;
   };
+
+  // Get full price breakdown
+  const priceBreakdown = useMemo(() => {
+    if (!selectedTask || !serviceConfig) return null;
+    const addOnTotal = serviceConfig.addOns
+      .filter((a) => selectedAddOns.includes(a.id))
+      .reduce((sum, a) => sum + a.price, 0);
+    return calculatePriceBreakdown(selectedTask.basePrice, 1, addOnTotal, 0);
+  }, [selectedTask, serviceConfig, selectedAddOns]);
 
   const estimatedPrice =
     selectedTask && serviceConfig
@@ -82,7 +95,7 @@ export default function BookingStep1Screen() {
           >
             {category ?? "Select service category"}
           </Text>
-          <Ionicons name="chevron-down" size={20} color="#A0A8D0" />
+          <Ionicons name="chevron-down" size={20} color={colors.text.muted} />
         </Pressable>
 
         {/* Task Selection */}
@@ -136,103 +149,30 @@ export default function BookingStep1Screen() {
 
         {/* Add-ons Selection */}
         {serviceConfig && selectedTask && (
-          <>
-            <Text className="text-text-secondary text-sm mb-1 mt-3">
-              Add-ons (Optional)
-            </Text>
-            <ScrollView horizontal={false} className="flex-1">
-              {serviceConfig.addOns.map((addOn) => (
-                <Pressable
-                  key={addOn.id}
-                  className={`bg-card rounded-xl p-3 mb-2 flex-row items-center ${
-                    selectedAddOns.includes(addOn.id)
-                      ? "border-2 border-accent"
-                      : "border-2 border-transparent"
-                  }`}
-                  onPress={() => {
-                    const isSelected = selectedAddOns.includes(addOn.id);
-                    const updatedAddOns = isSelected
-                      ? selectedAddOns.filter((id) => id !== addOn.id)
-                      : [...selectedAddOns, addOn.id];
-                    setSelectedAddOns(updatedAddOns);
-                    setDraft({
-                      selectedAddOnIds: updatedAddOns,
-                      estimatedPrice: computeEstimatedPrice(
-                        selectedTask,
-                        updatedAddOns,
-                        serviceConfig,
-                      ),
-                    });
-                  }}
-                >
-                  <View className="flex-1">
-                    <Text className="text-primary font-semibold">
-                      {addOn.name}
-                    </Text>
-                    <Text className="text-text-secondary text-xs mt-0.5">
-                      {addOn.description}
-                    </Text>
-                  </View>
-                  <View className="items-center ml-3">
-                    <Text className="text-accent font-semibold">
-                      +₱{addOn.price}
-                    </Text>
-                    <View
-                      className={`w-5 h-5 rounded border-2 border-accent items-center justify-center mt-1 ${
-                        selectedAddOns.includes(addOn.id)
-                          ? "bg-accent"
-                          : "bg-transparent"
-                      }`}
-                    >
-                      {selectedAddOns.includes(addOn.id) && (
-                        <Text className="text-primary text-xs">✓</Text>
-                      )}
-                    </View>
-                  </View>
-                </Pressable>
-              ))}
-            </ScrollView>
-          </>
+          <View className="mt-3">
+            <AddOnsSelector
+              addOns={serviceConfig.addOns}
+              selectedIds={selectedAddOns}
+              onSelectionChange={(updated) => {
+                setSelectedAddOns(updated);
+                setDraft({
+                  selectedAddOnIds: updated,
+                  estimatedPrice: computeEstimatedPrice(
+                    selectedTask,
+                    updated,
+                    serviceConfig,
+                  ),
+                });
+              }}
+              showPriceImpact={true}
+            />
+          </View>
         )}
 
         {/* Price Estimate Card */}
-        {selectedTask && serviceConfig && (
-          <View className="bg-card rounded-2xl p-4 mt-3">
-            <Text className="text-primary font-bold mb-2">Price Estimate</Text>
-            <View className="flex-row justify-between items-center mb-1">
-              <Text className="text-text-secondary text-sm">
-                {selectedTask.name}
-              </Text>
-              <Text className="text-primary text-sm">
-                ₱{selectedTask.basePrice}
-              </Text>
-            </View>
-            {selectedAddOns.map((addOnId) => {
-              const addOn = serviceConfig.addOns.find((a) => a.id === addOnId);
-              return addOn ? (
-                <View
-                  key={addOnId}
-                  className="flex-row justify-between items-center mb-1"
-                >
-                  <Text className="text-text-secondary text-sm">
-                    {addOn.name}
-                  </Text>
-                  <Text className="text-primary text-sm">+₱{addOn.price}</Text>
-                </View>
-              ) : null;
-            })}
-            <View className="border-b border-divider my-2" />
-            <View className="flex-row justify-between items-center">
-              <Text className="text-primary font-bold text-base">
-                Estimated Total
-              </Text>
-              <Text className="text-accent font-bold text-base">
-                ₱{estimatedPrice}
-              </Text>
-            </View>
-            <Text className="text-text-muted text-xs mt-2">
-              * Final price may vary based on actual scope of work
-            </Text>
+        {priceBreakdown && (
+          <View className="mt-3">
+            <PriceBreakdownCard breakdown={priceBreakdown} detailed={false} />
           </View>
         )}
 
@@ -252,7 +192,11 @@ export default function BookingStep1Screen() {
           className="bg-card rounded-xl p-4 flex-row items-center"
           onPress={() => router.push("/(client)/booking/address-picker")}
         >
-          <Ionicons name="location-outline" size={20} color="#4B5FD6" />
+          <Ionicons
+            name="location-outline"
+            size={20}
+            color={colors.accent.DEFAULT}
+          />
           <Text
             className={
               addressSet
@@ -275,7 +219,11 @@ export default function BookingStep1Screen() {
               );
               return selectedWorker ? (
                 <View className="bg-card rounded-xl p-4 flex-row items-center mt-2">
-                  <Ionicons name="person-circle" size={32} color="#A0A8D0" />
+                  <Ionicons
+                    name="person-circle"
+                    size={32}
+                    color={colors.text.muted}
+                  />
                   <View className="ml-3 flex-1">
                     <Text className="text-primary font-semibold">
                       {selectedWorker.name}

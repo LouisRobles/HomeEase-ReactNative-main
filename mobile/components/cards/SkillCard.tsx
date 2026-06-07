@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { colors } from "../../constants";
 
 type Skill = {
   id: string;
@@ -26,10 +27,10 @@ export const SkillCard: React.FC<Props> = ({ skill, onEdit, onDelete }) => {
         <Text className="text-accent font-semibold mt-2">₱{skill.rate}/hr</Text>
       </View>
       <Pressable onPress={onEdit} className="p-2">
-        <Ionicons name="pencil-outline" size={20} color="#A0A8D0" />
+        <Ionicons name="pencil-outline" size={20} color={colors.text.muted} />
       </Pressable>
       <Pressable onPress={onDelete} className="p-2">
-        <Ionicons name="trash-outline" size={20} color="#EF4444" />
+        <Ionicons name="trash-outline" size={20} color={colors.error} />
       </Pressable>
     </View>
   );

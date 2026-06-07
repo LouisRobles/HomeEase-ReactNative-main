@@ -1,6 +1,7 @@
 import React from "react";
 import { View, TextInput, Pressable, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { colors } from "../../constants";
 
 type Props = {
   placeholder?: string;
@@ -19,21 +20,25 @@ export const SearchBar: React.FC<Props> = ({
 }) => {
   const content = (
     <View className="flex-row items-center bg-primary-white border border-card-light rounded-full px-4 py-3">
-      <Ionicons name="search-outline" size={20} color="#A0A8D0" />
+      <Ionicons name="search-outline" size={20} color={colors.text.muted} />
       {onPress ? (
         <Text className="flex-1 ml-3 text-primary text-sm">{placeholder}</Text>
       ) : (
         <TextInput
           className="flex-1 ml-3 text-primary text-sm"
           placeholder={placeholder}
-          placeholderTextColor="#6B7299"
+          placeholderTextColor={colors.text.muted}
           value={value}
           onChangeText={onChangeText}
         />
       )}
       {onFilterPress && (
         <Pressable onPress={onFilterPress}>
-          <Ionicons name="options-outline" size={20} color="#A0A8D0" />
+          <Ionicons
+            name="options-outline"
+            size={20}
+            color={colors.text.muted}
+          />
         </Pressable>
       )}
     </View>

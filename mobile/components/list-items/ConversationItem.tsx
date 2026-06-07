@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { colors } from "../../constants";
 
 type Conversation = {
   id: string;
@@ -25,7 +26,7 @@ export const ConversationItem: React.FC<Props> = ({
       onPress={onPress}
     >
       <View className="w-12 h-12 bg-card-light rounded-full items-center justify-center mr-3">
-        <Ionicons name="person-circle" size={40} color="#A0A8D0" />
+        <Ionicons name="person-circle" size={40} color={colors.text.muted} />
       </View>
       <View className="flex-1">
         <Text className="text-primary font-bold">{conversation.name}</Text>

@@ -12,6 +12,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import PrimaryButton from "../../components/ui/PrimaryButton";
+import { colors } from "../../constants";
 
 const { width } = Dimensions.get("window");
 
@@ -19,21 +20,21 @@ const slides = [
   {
     id: "1",
     icon: "home" as const,
-    iconColor: "#4B5FD6",
+    iconColor: colors.primary.DEFAULT,
     title: "Welcome to HomeEase",
     subtitle: "Your home, our care.",
   },
   {
     id: "2",
     icon: "calendar" as const,
-    iconColor: "#4B5FD6",
+    iconColor: colors.primary.DEFAULT,
     title: "Book in Minutes",
     subtitle: "Choose a service, pick a worker, done.",
   },
   {
     id: "3",
     icon: "shield-checkmark" as const,
-    iconColor: "#4CAF50",
+    iconColor: colors.primary.DEFAULT,
     title: "Trusted Professionals",
     subtitle: "All workers are verified and rated.",
   },
@@ -64,10 +65,10 @@ export default function OnboardingScreen() {
   return (
     <SafeAreaView className="flex-1 bg-primary-white">
       <Pressable
-        className="absolute top-4 right-4 z-10 py-2 px-3"
+        className="absolute top-10 right-4 z-10 py-2 px-3"
         onPress={() => router.replace("/role-selection?intent=signup")}
       >
-        <Text className="text-accent font-semibold">Skip</Text>
+        <Text className="text-accent font-bold">Skip</Text>
       </Pressable>
 
       <FlatList
@@ -84,13 +85,13 @@ export default function OnboardingScreen() {
             className="flex-1 px-8 justify-center items-center"
           >
             {/* TODO: Replace with contextual illustration */}
-            <View className="w-64 h-64 bg-card rounded-full items-center justify-center mb-8">
+            <View className="w-64 h-64 bg-card-dark rounded-full items-center justify-center mb-8">
               <Ionicons name={item.icon} size={100} color={item.iconColor} />
             </View>
-            <Text className="text-primary text-3xl font-bold text-center">
+            <Text className="text-accent text-3xl font-bold text-center">
               {item.title}
             </Text>
-            <Text className="text-primary text-center text-lg mt-3">
+            <Text className="text-accent text-center text-lg mt-3">
               {item.subtitle}
             </Text>
           </View>

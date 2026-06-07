@@ -6,6 +6,7 @@ import { useRouter } from "expo-router";
 import TransactionItem from "../../../components/list-items/TransactionItem";
 import { workerTransactions } from "../../../constants/dummyData";
 import { useWorkerStore } from "../../../store/workerStore";
+import { colors } from "../../../constants";
 
 export default function EarningsScreen() {
   const router = useRouter();
@@ -28,13 +29,17 @@ export default function EarningsScreen() {
       >
         <View className="bg-card rounded-2xl p-5 mx-4 mt-4">
           <View className="flex-row items-center mb-2">
-            <Ionicons name="wallet" size={20} color="#F5C542" />
+            <Ionicons name="wallet" size={20} color={colors.warning} />
             <Text className="text-text-secondary text-sm ml-2">
               Total Earnings
             </Text>
           </View>
           <View className="flex-row items-center">
-            <Ionicons name="arrow-undo-outline" size={20} color="#A0A8D0" />
+            <Ionicons
+              name="arrow-undo-outline"
+              size={20}
+              color={colors.text.muted}
+            />
             <Text className="text-primary font-bold text-3xl ml-2">
               ₱{totalEarnings.toFixed(2)}
             </Text>

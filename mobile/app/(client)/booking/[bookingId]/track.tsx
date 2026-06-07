@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import ScreenHeader from "../../../../components/ui/ScreenHeader";
+import { colors } from "../../../../constants";
 
 export default function TrackBookingScreen() {
   const router = useRouter();
@@ -41,7 +42,7 @@ export default function TrackBookingScreen() {
           )}
         </View>
         <View className="flex-1 bg-card-dark rounded-2xl items-center justify-center min-h-[200]">
-          <Ionicons name="map" size={60} color="#4B5FD6" />
+          <Ionicons name="map" size={60} color={colors.accent.DEFAULT} />
           <Text className="text-text-secondary mt-2">Live Tracking</Text>
           <Text className="text-text-muted text-xs mt-1">
             {/* (Install react-native-maps for live tracking) */}
@@ -54,7 +55,7 @@ export default function TrackBookingScreen() {
         </View>
         <View className="bg-card rounded-2xl p-4 mt-6 flex-row items-center">
           <View className="w-12 h-12 bg-card-dark rounded-full items-center justify-center mr-3">
-            <Ionicons name="person-circle" size={40} color="#FFFFFF" />
+            <Ionicons name="person-circle" size={40} color={colors.white} />
           </View>
           <View className="flex-1">
             <Text className="text-primary font-bold">Juan Dela Cruz</Text>
@@ -64,7 +65,7 @@ export default function TrackBookingScreen() {
             onPress={() => router.push("/(client)/inbox/chat/c1")}
             className="bg-accent rounded-full p-2 mr-2"
           >
-            <Ionicons name="chatbubble" size={20} color="#FFFFFF" />
+            <Ionicons name="chatbubble" size={20} color={colors.white} />
           </Pressable>
           <Pressable
             onPress={() =>
@@ -75,7 +76,7 @@ export default function TrackBookingScreen() {
             }
             className="bg-accent rounded-full p-2"
           >
-            <Ionicons name="call" size={20} color="#FFFFFF" />
+            <Ionicons name="call" size={20} color={colors.white} />
           </Pressable>
         </View>
       </View>

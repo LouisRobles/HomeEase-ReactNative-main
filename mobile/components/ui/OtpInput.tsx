@@ -1,5 +1,6 @@
 import React, { useRef } from "react";
 import { View, TextInput, Pressable } from "react-native";
+import { colors } from "../../constants";
 
 type Props = {
   value: string;
@@ -67,7 +68,7 @@ export const OtpInput: React.FC<Props> = ({
           keyboardType="number-pad"
           maxLength={length}
           selectTextOnFocus
-          placeholderTextColor="#6B7299"
+          placeholderTextColor={colors.text.muted}
         />
       ))}
     </View>

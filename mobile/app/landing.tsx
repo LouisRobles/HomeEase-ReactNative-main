@@ -37,7 +37,7 @@ export default function LandingScreen() {
           </Text>
         </View>
 
-        <View className="px-6 mt-10 space-y-3">
+        <View className="px-6 mt-10 gap-4">
           <PrimaryButton
             label="Get Started"
             fullWidth

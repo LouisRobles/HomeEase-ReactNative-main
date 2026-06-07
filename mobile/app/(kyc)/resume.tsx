@@ -10,6 +10,7 @@ import PrimaryButton from "../../components/ui/PrimaryButton";
 import OutlinedButton from "../../components/ui/OutlinedButton";
 import ImageSourcePickerBottomSheet from "../../components/bottom-sheets/ImageSourcePickerBottomSheet";
 import type { BottomSheetHandle } from "../../components/bottom-sheets/BottomSheetWrapper";
+import { colors } from "../../constants";
 
 export default function ResumeScreen() {
   const router = useRouter();
@@ -18,7 +19,7 @@ export default function ResumeScreen() {
 
   const handleSelect = (uri: string) => {
     setResumeUri(uri);
-    sheetRef.current?.collapse?.();
+    sheetRef.current?.close();
   };
 
   const bulletPoints = [
@@ -66,7 +67,7 @@ export default function ResumeScreen() {
               <Ionicons
                 name="checkmark-circle"
                 size={16}
-                color="#4CAF50"
+                color={colors.success}
                 style={{ marginTop: 2 }}
               />
               <Text className="text-text-secondary text-sm ml-2 flex-1">
@@ -93,7 +94,11 @@ export default function ResumeScreen() {
           onPress={() => router.push("/(worker)/profile/resume-preview")}
         >
           <View className="flex-row items-center">
-            <Ionicons name="sparkles-outline" size={16} color="#4B5FD6" />
+            <Ionicons
+              name="sparkles-outline"
+              size={16}
+              color={colors.accent.DEFAULT}
+            />
             <Text className="text-accent text-sm ml-1 font-semibold">
               Preview AI Analysis Result
             </Text>

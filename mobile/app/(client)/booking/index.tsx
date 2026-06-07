@@ -1,20 +1,41 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, FlatList, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useFocusEffect } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import BookingCard from "../../../components/cards/BookingCard";
-import EmptyState from "../../../components/feedback/EmptyState";
-import LoadingSkeleton from "../../../components/feedback/LoadingSkeleton";
+import { BookingCard } from "../../../components/cards/BookingCard";
+import { EmptyState } from "../../../components/feedback/EmptyState";
+import { LoadingSkeleton } from "../../../components/feedback/LoadingSkeleton";
 import { useBookingStore } from "../../../store/bookingStore";
+import { colors } from "../../../constants";
 
 const TABS = ["Pending", "Active", "Completed", "Cancelled"] as const;
 
 export default function MyBookingsScreen() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<(typeof TABS)[number]>("Pending");
+  const [loading, setLoading] = useState(false);
   const { bookings } = useBookingStore();
-  const [loading] = useState(false);
+
+  // Reset tab when screen is focused
+  useFocusEffect(
+    React.useCallback(() => {
+      setActiveTab("Pending");
+      return () => {
+        // Cleanup if needed
+      };
+    }, []),
+  );
+
+  // Simulate loading on mount
+  useEffect(() => {
+    setLoading(true);
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 800);
+    return () => clearTimeout(timer);
+  }, []);
 
   const filtered = bookings.filter((b) => b.status === activeTab);
 
@@ -46,7 +67,7 @@ export default function MyBookingsScreen() {
       </View>
 
       {loading ? (
-        <LoadingSkeleton />
+        <LoadingSkeleton type="booking" count={4} />
       ) : filtered.length === 0 ? (
         <EmptyState
           title="No bookings yet"
@@ -76,7 +97,9 @@ export default function MyBookingsScreen() {
           renderItem={({ item }) => (
             <BookingCard
               booking={item}
-              onPress={() => router.push(`/(client)/booking/${item.id}`)}
+              onPress={() =>
+                router.push(`/(client)/booking/${item.id}/details`)
+              }
             />
           )}
         />
@@ -87,7 +110,7 @@ export default function MyBookingsScreen() {
           className="absolute bottom-6 right-6 w-14 h-14 bg-accent rounded-full items-center justify-center"
           onPress={() => router.push("/(client)/booking/new/step-1")}
         >
-          <Ionicons name="add" size={28} color="#FFFFFF" />
+          <Ionicons name="add" size={28} color={colors.white} />
         </Pressable>
       )}
     </SafeAreaView>

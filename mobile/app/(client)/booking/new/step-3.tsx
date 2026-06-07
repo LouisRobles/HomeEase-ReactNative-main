@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useMemo } from "react";
 import { View, Text, ScrollView, Alert, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -6,7 +6,12 @@ import ScreenHeader from "../../../../components/ui/ScreenHeader";
 import StepperHorizontal from "../../../../components/steppers/StepperHorizontal";
 import PrimaryButton from "../../../../components/ui/PrimaryButton";
 import InputField from "../../../../components/ui/InputField";
+import PriceBreakdownCard from "../../../../components/ui/PriceBreakdown";
 import { useBookingStore } from "../../../../store/bookingStore";
+import {
+  calculatePriceBreakdown,
+  getTipSuggestions,
+} from "../../../../utils/pricing";
 import PaymentMethodBottomSheet from "../../../../components/bottom-sheets/PaymentMethodBottomSheet";
 import GenericConfirmationModal from "../../../../components/modals/GenericConfirmationModal";
 import type { BottomSheetHandle } from "../../../../components/bottom-sheets/BottomSheetWrapper";
@@ -20,7 +25,7 @@ export default function BookingStep3Screen() {
   );
   const [confirmVisible, setConfirmVisible] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [tipAmount, setTipAmount] = useState<number>(0);
+  const [tipAmount, setTipAmount] = useState<number>(draft.tip || 0);
   const [customTip, setCustomTip] = useState<string>("");
   const [showCustomTip, setShowCustomTip] = useState(false);
   const paymentRef = useRef<BottomSheetHandle | null>(null);
@@ -36,13 +41,11 @@ export default function BookingStep3Screen() {
             ? "Cash"
             : null;
 
-  const BASE_AMOUNT = draft.estimatedPrice > 0 ? draft.estimatedPrice : 400;
-  const TAX_RATE = 0.12;
-  const taxAmount = parseFloat((BASE_AMOUNT * TAX_RATE).toFixed(2));
-  const serviceFee = parseFloat((BASE_AMOUNT * 0.1).toFixed(2));
-  const total = parseFloat(
-    (BASE_AMOUNT + taxAmount + serviceFee + tipAmount).toFixed(2),
-  );
+  // Calculate price breakdown using utility
+  const priceBreakdown = useMemo(() => {
+    const baseAmount = draft.estimatedPrice > 0 ? draft.estimatedPrice : 400;
+    return calculatePriceBreakdown(baseAmount, 1, 0, tipAmount);
+  }, [draft.estimatedPrice, tipAmount]);
 
   const handleConfirmBooking = () => {
     setConfirmVisible(true);
@@ -52,7 +55,11 @@ export default function BookingStep3Screen() {
     setConfirmVisible(false);
     setLoading(true);
     try {
-      router.push("/(client)/booking/payment");
+      // Save the final payment method to the store
+      setDraft({ paymentMethod });
+
+      // Navigate to success screen
+      router.push("/(client)/booking/success");
     } catch (err) {
       Alert.alert("Error", "Failed to process booking");
     } finally {
@@ -165,33 +172,8 @@ export default function BookingStep3Screen() {
           </View>
         )}
 
-        <View className="bg-card rounded-2xl p-4 mt-6">
-          <Text className="text-primary font-bold mb-3">Order Summary</Text>
-          <View className="flex-row justify-between items-center mb-1">
-            <Text className="text-text-secondary text-sm">Service Fee</Text>
-            <Text className="text-primary text-sm">₱{BASE_AMOUNT}.00</Text>
-          </View>
-          <View className="flex-row justify-between items-center mb-1">
-            <Text className="text-text-secondary text-sm">VAT (12%)</Text>
-            <Text className="text-primary text-sm">₱{taxAmount}</Text>
-          </View>
-          <View className="flex-row justify-between items-center mb-1">
-            <Text className="text-text-secondary text-sm">
-              Platform Fee (10%)
-            </Text>
-            <Text className="text-primary text-sm">₱{serviceFee}</Text>
-          </View>
-          {tipAmount > 0 && (
-            <View className="flex-row justify-between items-center mb-1">
-              <Text className="text-text-secondary text-sm">Tip</Text>
-              <Text className="text-primary text-sm">₱{tipAmount}.00</Text>
-            </View>
-          )}
-          <View className="border-b border-divider my-2" />
-          <View className="flex-row justify-between items-center">
-            <Text className="text-primary font-bold text-base">Total</Text>
-            <Text className="text-accent font-bold text-lg">₱{total}</Text>
-          </View>
+        <View className="mt-6">
+          <PriceBreakdownCard breakdown={priceBreakdown} detailed={true} />
         </View>
 
         <View className="mt-8">

@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-
+import { colors } from "../../constants";
 type Props = {
   title: string;
   showBack?: boolean;
@@ -25,7 +25,7 @@ export const ScreenHeader: React.FC<Props> = ({
           className="w-10 h-10 rounded-full items-center justify-center mr-2"
           onPress={() => router.back()}
         >
-          <Ionicons name="chevron-back" size={22} color="#FFFFFF" />
+          <Ionicons name="chevron-back" size={22} color={colors.white} />
         </Pressable>
       ) : (
         <View className="w-10 mr-2" />
@@ -38,7 +38,7 @@ export const ScreenHeader: React.FC<Props> = ({
           className="w-10 h-10 rounded-full items-center justify-center ml-2"
           onPress={onRightPress}
         >
-          <Ionicons name={rightIcon} size={22} color="#FFFFFF" />
+          <Ionicons name={rightIcon} size={22} color={colors.white} />
         </Pressable>
       ) : (
         <View className="w-10 ml-2" />

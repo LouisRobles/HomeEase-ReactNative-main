@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { bookings as dummyBookings } from '../constants/dummyData';
+import { bookingStorage } from '../utils/storage';
 
 export type BookingStatus = 'Pending' | 'Active' | 'Completed' | 'Cancelled';
 
@@ -24,6 +25,11 @@ export type DraftBooking = {
   instructions?: string;
   workerId: string | null;
   paymentMethod: string | null;
+  tip?: number;
+  taxRate?: number;
+  selectedTaskId: string | null;
+  selectedAddOnIds: string[];
+  estimatedPrice: number;
 };
 
 type BookingState = {
@@ -38,6 +44,7 @@ type BookingState = {
   updateBookingStatus: (id: string, status: BookingStatus) => void;
   processPayment: (method: string, amount: number) => Promise<Booking>;
   submitReview: (bookingId: string, rating: number, comment: string) => void;
+  restoreDraft: () => Promise<void>;
 };
 
 const initialDraft: DraftBooking = {
@@ -49,6 +56,11 @@ const initialDraft: DraftBooking = {
   instructions: '',
   workerId: null,
   paymentMethod: null,
+  tip: 0,
+  taxRate: 0.12,
+  selectedTaskId: null,
+  selectedAddOnIds: [],
+  estimatedPrice: 0,
 };
 
 export const useBookingStore = create<BookingState>((set) => ({
@@ -58,8 +70,16 @@ export const useBookingStore = create<BookingState>((set) => ({
   setBookings: (bookings) => set({ bookings }),
   setSelectedBooking: (booking) => set({ selectedBooking: booking }),
   setDraft: (draft) =>
-    set((s) => ({ draft: { ...s.draft, ...draft } })),
-  clearDraft: () => set({ draft: initialDraft }),
+    set((s) => {
+      const updated = { draft: { ...s.draft, ...draft } };
+      // Persist draft
+      bookingStorage.saveDraft(updated.draft);
+      return updated;
+    }),
+  clearDraft: async () => {
+    set({ draft: initialDraft });
+    await bookingStorage.clearDraft();
+  },
   setCurrentBooking: (booking) => set({ selectedBooking: booking }),
   updateBookingStatus: (id, status) =>
     set((state) => {
@@ -104,6 +124,9 @@ export const useBookingStore = create<BookingState>((set) => ({
         };
       });
 
+      // Clear persisted draft after successful payment
+      bookingStorage.clearDraft();
+
       setTimeout(() => {
         if (createdBooking) {
           resolve(createdBooking);
@@ -125,4 +148,11 @@ export const useBookingStore = create<BookingState>((set) => ({
         selectedBooking: updatedSelected,
       };
     }),
+  
+  restoreDraft: async () => {
+    const savedDraft = await bookingStorage.getDraft();
+    if (savedDraft) {
+      set({ draft: savedDraft });
+    }
+  },
 }));

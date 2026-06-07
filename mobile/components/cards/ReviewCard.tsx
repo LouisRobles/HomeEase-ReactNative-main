@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import StarRating from "../ui/StarRating";
+import { colors } from "../../constants";
 
 type Review = {
   id: string;
@@ -21,7 +22,7 @@ export const ReviewCard: React.FC<Props> = ({ review }) => {
       <View className="flex-row items-center">
         {/* TODO: Replace with reviewer profile photo */}
         <View className="w-10 h-10 bg-card-light rounded-full items-center justify-center mr-3">
-          <Ionicons name="person" size={20} color="#A0A8D0" />
+          <Ionicons name="person" size={20} color={colors.text.muted} />
         </View>
         <View className="flex-1">
           <Text className="text-primary font-semibold">

@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { colors } from "../../constants";
 
 type Step = {
   label: string;
@@ -28,7 +29,7 @@ export const StepperVertical: React.FC<Props> = ({ steps }) => {
               }`}
             >
               {step.status === "done" ? (
-                <Ionicons name="checkmark" size={14} color="#FFFFFF" />
+                <Ionicons name="checkmark" size={14} color={colors.white} />
               ) : (
                 <View className="w-2 h-2 rounded-full bg-card" />
               )}

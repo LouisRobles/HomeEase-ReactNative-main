@@ -8,7 +8,8 @@ import StarRating from "../../../components/ui/StarRating";
 import PrimaryButton from "../../../components/ui/PrimaryButton";
 import OutlinedButton from "../../../components/ui/OutlinedButton";
 import GenericConfirmationModal from "../../../components/modals/GenericConfirmationModal";
-import { jobRequests } from "../../../constants/dummyData";
+import { jobRequests, workerActiveJobs } from "../../../constants/dummyData";
+import { colors } from "../../../constants";
 
 export default function RequestDetailScreen() {
   const router = useRouter();
@@ -40,7 +41,11 @@ export default function RequestDetailScreen() {
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 100 }}>
         <View className="bg-card rounded-2xl p-4 mb-3 flex-row items-center">
           <View className="w-14 h-14 bg-card-light rounded-full items-center justify-center mr-3">
-            <Ionicons name="person-circle" size={48} color="#A0A8D0" />
+            <Ionicons
+              name="person-circle"
+              size={48}
+              color={colors.text.muted}
+            />
           </View>
           <View className="flex-1">
             <Text className="text-primary font-bold text-lg">
@@ -63,12 +68,45 @@ export default function RequestDetailScreen() {
         </View>
 
         <View className="bg-card rounded-2xl p-4 mb-3">
+          <Text className="text-primary font-bold mb-2">
+            Your Current Workload
+          </Text>
+          {(() => {
+            const activeJobs = workerActiveJobs["w1"] || 0;
+            if (activeJobs === 0) {
+              return (
+                <Text className="text-success text-sm">
+                  You have no active jobs. You are free to accept.
+                </Text>
+              );
+            } else if (activeJobs === 1) {
+              return (
+                <Text className="text-warning text-sm">
+                  You have 1 active job currently.
+                </Text>
+              );
+            } else {
+              return (
+                <Text className="text-error text-sm">
+                  You have {activeJobs} active jobs. Consider your capacity
+                  before accepting.
+                </Text>
+              );
+            }
+          })()}
+        </View>
+
+        <View className="bg-card rounded-2xl p-4 mb-3">
           <Text className="text-primary font-bold mb-2">Location</Text>
           <Text className="text-text-secondary text-sm">
             123 Rizal St., Hagonoy, Bulacan
           </Text>
           <View className="w-full h-32 bg-card-dark rounded-xl mt-3 items-center justify-center">
-            <Ionicons name="map-outline" size={40} color="#4B5FD6" />
+            <Ionicons
+              name="map-outline"
+              size={40}
+              color={colors.accent.DEFAULT}
+            />
             <Text className="text-text-muted text-xs mt-1">Map Preview</Text>
           </View>
         </View>
@@ -78,6 +116,32 @@ export default function RequestDetailScreen() {
           <Text className="text-accent font-bold text-4xl mt-1">
             ₱{request.amount}.00
           </Text>
+          <View className="mt-3 bg-card-dark rounded-xl p-3 w-full">
+            <Text className="text-text-secondary text-xs font-semibold mb-2">
+              Your Earnings Breakdown
+            </Text>
+            <View className="flex-row justify-between py-1">
+              <Text className="text-text-muted text-xs">Client Pays</Text>
+              <Text className="text-text-secondary text-xs">
+                ₱{request.amount}.00
+              </Text>
+            </View>
+            <View className="flex-row justify-between py-1">
+              <Text className="text-text-muted text-xs">
+                Platform Fee (10%)
+              </Text>
+              <Text className="text-text-secondary text-xs">
+                -₱{parseFloat((request.amount * 0.1).toFixed(2))}
+              </Text>
+            </View>
+            <View className="border-b border-divider my-1" />
+            <View className="flex-row justify-between py-1">
+              <Text className="text-text-muted text-xs">You Receive</Text>
+              <Text className="text-success text-xs font-bold">
+                ₱{parseFloat((request.amount * 0.9).toFixed(2))}
+              </Text>
+            </View>
+          </View>
         </View>
 
         <View className="flex-row gap-3 mt-4">

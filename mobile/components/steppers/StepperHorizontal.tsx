@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { colors } from "@/constants";
 
 type Props = {
   steps: string[];
@@ -26,7 +27,7 @@ export const StepperHorizontal: React.FC<Props> = ({ steps, currentStep }) => {
                 }`}
               >
                 {isDone ? (
-                  <Ionicons name="checkmark" size={18} color="#FFFFFF" />
+                  <Ionicons name="checkmark" size={18} color={colors.white} />
                 ) : (
                   <Text
                     className={`text-sm font-bold ${

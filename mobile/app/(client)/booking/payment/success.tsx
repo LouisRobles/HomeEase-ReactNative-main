@@ -6,6 +6,7 @@ import { useRouter } from "expo-router";
 import PrimaryButton from "../../../../components/ui/PrimaryButton";
 import OutlinedButton from "../../../../components/ui/OutlinedButton";
 import { useBookingStore } from "../../../../store/bookingStore";
+import { colors } from "../../../../constants";
 
 export default function PaymentSuccessScreen() {
   const router = useRouter();
@@ -19,7 +20,7 @@ export default function PaymentSuccessScreen() {
   return (
     <SafeAreaView className="flex-1 bg-primary-white items-center justify-center px-8">
       <View className="w-32 h-32 bg-success/20 rounded-full items-center justify-center mb-8">
-        <Ionicons name="checkmark-circle" size={80} color="#4CAF50" />
+        <Ionicons name="checkmark-circle" size={80} color={colors.success} />
       </View>
       <Text className="text-success text-2xl font-bold text-center">
         Payment Successful!

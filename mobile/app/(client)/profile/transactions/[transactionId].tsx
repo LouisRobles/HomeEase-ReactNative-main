@@ -59,6 +59,14 @@ export default function TransactionDetailScreen() {
             )
           }
         />
+        <OutlinedButton
+          label="View Receipt"
+          onPress={() =>
+            router.push(
+              `/(client)/profile/transactions/receipt/${transactionId}`,
+            )
+          }
+        />
       </View>
     </SafeAreaView>
   );

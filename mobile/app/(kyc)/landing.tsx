@@ -5,6 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import ScreenHeader from "../../components/ui/ScreenHeader";
 import PrimaryButton from "../../components/ui/PrimaryButton";
+import { colors } from "../../constants";
 
 export default function KycLandingScreen() {
   const router = useRouter();
@@ -22,7 +23,7 @@ export default function KycLandingScreen() {
             <Ionicons
               name="shield-checkmark-outline"
               size={80}
-              color="#4B5FD6"
+              color={colors.accent.DEFAULT}
             />
           </View>
         </View>
@@ -41,7 +42,11 @@ export default function KycLandingScreen() {
             "Certifications (workers only)",
           ].map((item, i) => (
             <View key={i} className="flex-row items-center mb-3">
-              <Ionicons name="checkmark-circle" size={20} color="#4CAF50" />
+              <Ionicons
+                name="checkmark-circle"
+                size={20}
+                color={colors.success}
+              />
               <Text className="text-text-secondary ml-2">{item}</Text>
             </View>
           ))}

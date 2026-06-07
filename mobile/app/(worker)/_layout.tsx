@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { View } from "react-native";
 import NotificationBadge from "../../components/ui/NotificationBadge";
 import { useNotificationStore } from "../../store/notificationStore";
+import { colors } from "../../constants";
 
 export default function WorkerLayout() {
   const unreadCount = useNotificationStore((s) => s.unreadCount);
@@ -13,11 +14,11 @@ export default function WorkerLayout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: "#1E40AF",
-          borderTopColor: "#2A3080",
+          backgroundColor: colors.primary.DEFAULT,
+          borderTopColor: colors.divider,
         },
-        tabBarActiveTintColor: "#06B6D4",
-        tabBarInactiveTintColor: "#FFFFFF",
+        tabBarActiveTintColor: colors.accent.DEFAULT,
+        tabBarInactiveTintColor: colors.white,
       }}
     >
       <Tabs.Screen

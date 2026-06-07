@@ -6,6 +6,7 @@ import { useRouter } from "expo-router";
 import SectionHeader from "../../../components/ui/SectionHeader";
 import RequestCard from "../../../components/cards/RequestCard";
 import { useWorkerStore } from "../../../store/workerStore";
+import { colors } from "../../../constants";
 
 export default function WorkerHomeScreen() {
   const router = useRouter();
@@ -28,7 +29,11 @@ export default function WorkerHomeScreen() {
         <View className="flex-row items-center justify-between px-4 pt-2 pb-2">
           <Text className="text-primary text-xl font-bold">HomeEase</Text>
           <Pressable className="p-2">
-            <Ionicons name="notifications-outline" size={24} color="#1E40AF" />
+            <Ionicons
+              name="notifications-outline"
+              size={24}
+              color={colors.primary.dark}
+            />
           </Pressable>
         </View>
 
@@ -108,7 +113,11 @@ export default function WorkerHomeScreen() {
               className="flex-1 min-w-[140] bg-blue-900/50 rounded-xl p-4"
               onPress={() => router.push("/(worker)/profile/availability")}
             >
-              <Ionicons name="calendar-outline" size={24} color="#4B5FD6" />
+              <Ionicons
+                name="calendar-outline"
+                size={24}
+                color={colors.primary.DEFAULT}
+              />
               <Text className="text-primary font-semibold mt-2">
                 Set Availability
               </Text>
@@ -117,7 +126,11 @@ export default function WorkerHomeScreen() {
               className="flex-1 min-w-[140] bg-green-900/50 rounded-xl p-4"
               onPress={() => router.push("/(worker)/earnings")}
             >
-              <Ionicons name="wallet-outline" size={24} color="#4CAF50" />
+              <Ionicons
+                name="wallet-outline"
+                size={24}
+                color={colors.success}
+              />
               <Text className="text-primary font-semibold mt-2">
                 My Earnings
               </Text>
@@ -129,7 +142,7 @@ export default function WorkerHomeScreen() {
               <Ionicons
                 name="document-text-outline"
                 size={24}
-                color="#F59E0B"
+                color={colors.warning}
               />
               <Text className="text-primary font-semibold mt-2">
                 Certifications
@@ -139,7 +152,11 @@ export default function WorkerHomeScreen() {
               className="flex-1 min-w-[140] bg-purple-900/50 rounded-xl p-4"
               onPress={() => router.push("/(worker)/profile")}
             >
-              <Ionicons name="person-outline" size={24} color="#A78BFA" />
+              <Ionicons
+                name="person-outline"
+                size={24}
+                color={colors.primary.light}
+              />
               <Text className="text-primary font-semibold mt-2">
                 View Profile
               </Text>

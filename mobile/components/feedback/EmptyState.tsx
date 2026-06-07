@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { colors } from "../../constants";
 
 type Props = {
   icon?: keyof typeof Ionicons.glyphMap;
@@ -21,7 +22,7 @@ export const EmptyState: React.FC<Props> = ({
     <View className="flex-1 items-center justify-center py-16 px-6">
       {/* TODO: Replace with contextual empty state illustration */}
       <View className="w-20 h-20 rounded-full bg-card items-center justify-center mb-4">
-        <Ionicons name={icon} size={32} color="#6B7299" />
+        <Ionicons name={icon} size={32} color={colors.text.muted} />
       </View>
       <Text className="text-primary font-semibold text-base text-center">
         {title}

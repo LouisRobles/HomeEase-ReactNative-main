@@ -5,6 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import ScreenHeader from "../../../../components/ui/ScreenHeader";
 import AddressCard from "../../../../components/cards/AddressCard";
+import { colors } from "../../../../constants";
 
 const ADDRESSES = [
   {
@@ -43,7 +44,7 @@ export default function AddressesScreen() {
         className="absolute bottom-6 right-6 w-14 h-14 bg-accent rounded-full items-center justify-center"
         onPress={() => router.push("/(client)/profile/addresses/new")}
       >
-        <Ionicons name="add" size={28} color="#FFFFFF" />
+        <Ionicons name="add" size={28} color={colors.white} />
       </Pressable>
     </SafeAreaView>
   );

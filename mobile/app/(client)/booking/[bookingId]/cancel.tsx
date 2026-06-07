@@ -9,6 +9,7 @@ import OutlinedButton from "../../../../components/ui/OutlinedButton";
 import DangerButton from "../../../../components/ui/DangerButton";
 import GenericConfirmationModal from "../../../../components/modals/GenericConfirmationModal";
 import { useBookingStore } from "../../../../store/bookingStore";
+import { colors } from "../../../../constants";
 
 const REASONS = [
   "Changed my mind",
@@ -42,7 +43,7 @@ export default function CancelBookingScreen() {
         contentContainerStyle={{ padding: 24, paddingBottom: 40 }}
       >
         <View className="bg-error/10 border border-error rounded-xl p-4 flex-row items-start mb-4">
-          <Ionicons name="warning-outline" size={24} color="#EF4444" />
+          <Ionicons name="warning-outline" size={24} color={colors.error} />
           <Text className="text-error ml-2 flex-1">
             Cancellation may not be refundable.
           </Text>

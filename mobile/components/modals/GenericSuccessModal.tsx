@@ -3,6 +3,7 @@ import { View, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import ModalWrapper from "./ModalWrapper";
 import PrimaryButton from "../ui/PrimaryButton";
+import { colors } from "../../constants";
 
 type Props = {
   visible: boolean;
@@ -18,7 +19,7 @@ export const GenericSuccessModal: React.FC<Props> = ({
   return (
     <ModalWrapper visible={visible} onClose={onClose}>
       <View className="items-center mb-4">
-        <Ionicons name="checkmark-circle" size={48} color="#4CAF50" />
+        <Ionicons name="checkmark-circle" size={48} color={colors.success} />
       </View>
       <Text className="text-primary font-bold text-lg text-center">
         {title}

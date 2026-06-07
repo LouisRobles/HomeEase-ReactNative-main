@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import ScreenHeader from "../../../components/ui/ScreenHeader";
+import { colors } from "../../../constants";
 
 export default function AboutScreen() {
   const router = useRouter();
@@ -13,7 +14,7 @@ export default function AboutScreen() {
       <ScreenHeader title="About HomeEase" showBack />
       <ScrollView contentContainerStyle={{ padding: 24, alignItems: "center" }}>
         <View className="w-20 h-20 bg-accent rounded-2xl items-center justify-center mb-4">
-          <Ionicons name="home" size={48} color="#FFFFFF" />
+          <Ionicons name="home" size={48} color={colors.white} />
         </View>
         <Text className="text-primary text-xl font-bold">HomeEase</Text>
         <Text className="text-text-secondary">On-Demand Household Help</Text>

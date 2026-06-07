@@ -11,6 +11,7 @@ import OutlinedButton from "../../../../components/ui/OutlinedButton";
 import DangerButton from "../../../../components/ui/DangerButton";
 import { useBookingStore } from "../../../../store/bookingStore";
 import type { StatusType } from "../../../../components/ui/StatusBadge";
+import { colors } from "../../../../constants";
 
 export default function BookingDetailScreen() {
   const router = useRouter();
@@ -49,7 +50,11 @@ export default function BookingDetailScreen() {
 
         <View className="bg-card rounded-2xl p-4 mb-3 flex-row items-center">
           <View className="w-12 h-12 bg-card-light rounded-full items-center justify-center mr-3">
-            <Ionicons name="person-circle" size={40} color="#A0A8D0" />
+            <Ionicons
+              name="person-circle"
+              size={40}
+              color={colors.text.muted}
+            />
           </View>
           <View className="flex-1">
             <Text className="text-primary font-bold">{booking.worker}</Text>
@@ -61,7 +66,11 @@ export default function BookingDetailScreen() {
             onPress={() => router.push(`/(client)/inbox/chat/c1`)}
             className="p-2"
           >
-            <Ionicons name="chatbubble-outline" size={24} color="#4B5FD6" />
+            <Ionicons
+              name="chatbubble-outline"
+              size={24}
+              color={colors.accent.DEFAULT}
+            />
           </Pressable>
           <Pressable
             onPress={() =>
@@ -72,7 +81,11 @@ export default function BookingDetailScreen() {
             }
             className="p-2"
           >
-            <Ionicons name="call-outline" size={24} color="#4B5FD6" />
+            <Ionicons
+              name="call-outline"
+              size={24}
+              color={colors.accent.DEFAULT}
+            />
           </Pressable>
         </View>
 

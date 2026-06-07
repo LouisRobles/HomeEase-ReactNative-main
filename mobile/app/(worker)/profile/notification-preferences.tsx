@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import ScreenHeader from "../../../components/ui/ScreenHeader";
 import PrimaryButton from "../../../components/ui/PrimaryButton";
+import { colors } from "../../../constants";
 
 export default function WorkerNotificationPreferencesScreen() {
   const router = useRouter();
@@ -31,8 +32,8 @@ export default function WorkerNotificationPreferencesScreen() {
               <Switch
                 value={item.value}
                 onValueChange={item.set}
-                trackColor={{ false: "#2A3080", true: "#4B5FD6" }}
-                thumbColor="#FFFFFF"
+                trackColor={{ false: "#2A3080", true: colors.primary.DEFAULT }}
+                thumbColor={colors.white}
               />
             </View>
           ))}

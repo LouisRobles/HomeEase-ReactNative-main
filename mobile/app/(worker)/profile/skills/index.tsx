@@ -5,6 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import ScreenHeader from "../../../../components/ui/ScreenHeader";
 import SkillCard from "../../../../components/cards/SkillCard";
+import { colors } from "../../../../constants";
 
 const SKILLS = [
   { id: "s1", name: "Pipe Repair", category: "Plumbing", rate: 250 },
@@ -30,7 +31,7 @@ export default function SkillsScreen() {
         className="absolute bottom-6 right-6 w-14 h-14 bg-accent rounded-full items-center justify-center"
         onPress={() => {}}
       >
-        <Ionicons name="add" size={28} color="#FFFFFF" />
+        <Ionicons name="add" size={28} color={colors.white} />
       </Pressable>
     </SafeAreaView>
   );

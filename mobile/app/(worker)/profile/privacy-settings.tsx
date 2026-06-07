@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import ScreenHeader from "../../../components/ui/ScreenHeader";
 import PrimaryButton from "../../../components/ui/PrimaryButton";
+import { colors } from "../../../constants";
 
 export default function WorkerPrivacySettingsScreen() {
   const router = useRouter();
@@ -21,8 +22,8 @@ export default function WorkerPrivacySettingsScreen() {
             <Switch
               value={showProfile}
               onValueChange={setShowProfile}
-              trackColor={{ false: "#2A3080", true: "#4B5FD6" }}
-              thumbColor="#FFFFFF"
+              trackColor={{ false: "#2A3080", true: colors.primary.DEFAULT }}
+              thumbColor={colors.white}
             />
           </View>
           <View className="flex-row justify-between items-center py-4 px-4 border-b border-divider">
@@ -30,8 +31,8 @@ export default function WorkerPrivacySettingsScreen() {
             <Switch
               value={location}
               onValueChange={setLocation}
-              trackColor={{ false: "#2A3080", true: "#4B5FD6" }}
-              thumbColor="#FFFFFF"
+              trackColor={{ false: "#2A3080", true: colors.primary.DEFAULT }}
+              thumbColor={colors.white}
             />
           </View>
           <View className="flex-row justify-between items-center py-4 px-4 border-b border-divider">
@@ -39,8 +40,8 @@ export default function WorkerPrivacySettingsScreen() {
             <Switch
               value={usage}
               onValueChange={setUsage}
-              trackColor={{ false: "#2A3080", true: "#4B5FD6" }}
-              thumbColor="#FFFFFF"
+              trackColor={{ false: "#2A3080", true: colors.primary.DEFAULT }}
+              thumbColor={colors.white}
             />
           </View>
           <View className="py-4 px-4 border-b border-divider">

@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { View, Text, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
+import { colors } from "../../../../constants";
 
 export default function PaymentRedirectScreen() {
   const router = useRouter();
@@ -26,7 +27,7 @@ export default function PaymentRedirectScreen() {
       </Text>
       <ActivityIndicator
         size="large"
-        color="#4B5FD6"
+        color={colors.accent.DEFAULT}
         style={{ marginTop: 24 }}
       />
     </SafeAreaView>

@@ -39,10 +39,10 @@ export default function UploadIdScreen() {
         contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 40 }}
       >
         <StepperHorizontal
-          steps={["ID Upload", "Selfie", "Certs"]}
+          steps={["ID", "Selfie", "Certs", "Resume"]}
           currentStep={0}
         />
-        <Text className="text-text-secondary text-sm mb-4">Step 1 of 3</Text>
+        <Text className="text-text-secondary text-sm mb-4">Step 1 of 4</Text>
 
         <UploadCard
           label="Tap to upload front of ID"

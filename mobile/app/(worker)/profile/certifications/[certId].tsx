@@ -6,6 +6,7 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import ScreenHeader from "../../../../components/ui/ScreenHeader";
 import StatusBadge from "../../../../components/ui/StatusBadge";
 import DangerButton from "../../../../components/ui/DangerButton";
+import { colors } from "../../../../constants";
 
 const CERTS: Record<
   string,
@@ -54,7 +55,11 @@ export default function CertificationDetailScreen() {
       <ScreenHeader title="Certification Details" showBack />
       <View className="px-4 py-6">
         <View className="w-full h-48 bg-card-dark rounded-2xl items-center justify-center mb-4">
-          <Ionicons name="document-text" size={60} color="#4B5FD6" />
+          <Ionicons
+            name="document-text"
+            size={60}
+            color={colors.primary.DEFAULT}
+          />
           <Text className="text-text-secondary mt-2">Document Preview</Text>
         </View>
         <View className="bg-card rounded-2xl p-4 mb-4">

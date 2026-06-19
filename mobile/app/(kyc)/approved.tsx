@@ -5,6 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import PrimaryButton from "../../components/ui/PrimaryButton";
 import { useAuthStore } from "../../store/authStore";
+import { colors } from "../../constants";
 
 export default function KycApprovedScreen() {
   const router = useRouter();
@@ -16,7 +17,7 @@ export default function KycApprovedScreen() {
     <SafeAreaView className="flex-1 bg-primary-white items-center justify-center px-8">
       {/* TODO: Replace with approved/success illustration */}
       <View className="w-32 h-32 bg-success/20 rounded-full items-center justify-center mb-8">
-        <Ionicons name="checkmark-circle" size={80} color="#4CAF50" />
+        <Ionicons name="checkmark-circle" size={80} color={colors.success} />
       </View>
       <Text className="text-success text-2xl font-bold text-center">
         Verification Approved!

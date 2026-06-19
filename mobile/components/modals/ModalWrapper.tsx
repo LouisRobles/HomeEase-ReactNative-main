@@ -1,6 +1,7 @@
 import React from "react";
 import { Modal, View, Text, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { colors } from "../../constants";
 
 type Props = {
   visible: boolean;
@@ -34,7 +35,7 @@ export const ModalWrapper: React.FC<Props> = ({
             <View className="flex-row justify-between items-center mb-4">
               <Text className="text-primary font-bold text-lg">{title}</Text>
               <Pressable onPress={onClose}>
-                <Ionicons name="close" size={24} color="#FFFFFF" />
+                <Ionicons name="close" size={24} color={colors.white} />
               </Pressable>
             </View>
           )}

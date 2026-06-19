@@ -3,12 +3,12 @@ import { View, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import ScreenHeader from "../../../components/ui/ScreenHeader";
-import { transactions } from "../../../constants/dummyData";
+import { workerTransactions } from "../../../constants/dummyData";
 
 export default function EarningsTransactionScreen() {
   const router = useRouter();
   const { transactionId } = useLocalSearchParams<{ transactionId: string }>();
-  const t = transactions.find((x) => x.id === transactionId);
+  const t = workerTransactions.find((x) => x.id === transactionId);
 
   if (!t) {
     return (

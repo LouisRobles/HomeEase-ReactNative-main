@@ -17,6 +17,7 @@ export default function RateBookingScreen() {
     s.bookings.find((b) => b.id === bookingId),
   );
   const submitReview = useBookingStore((s) => s.submitReview);
+  const setDraft = useBookingStore((s) => s.setDraft);
 
   const [rating, setRating] = useState(booking?.rating ?? 0);
   const [review, setReview] = useState(booking?.reviewText ?? "");
@@ -35,6 +36,18 @@ export default function RateBookingScreen() {
     }
     submitReview(booking.id, rating, review.trim());
     setSuccessVisible(true);
+  };
+
+  const handleBookAgain = () => {
+    if (!booking) {
+      Alert.alert("Error", "Booking not found");
+      return;
+    }
+    setDraft({
+      category: booking.service,
+      workerId: booking.worker,
+    });
+    router.push("/(client)/booking/new/step-1");
   };
 
   return (
@@ -76,12 +89,15 @@ export default function RateBookingScreen() {
           multiline
         />
         <OutlinedButton label="Add Photos" onPress={() => {}} />
-        <View className="mt-6">
+        <View className="mt-6 gap-3">
           <PrimaryButton
             label="Submit Review"
             fullWidth
             onPress={handleSubmit}
           />
+          <View className="w-full">
+            <OutlinedButton label="Book Again" onPress={handleBookAgain} />
+          </View>
         </View>
       </ScrollView>
       <GenericSuccessModal
@@ -89,7 +105,7 @@ export default function RateBookingScreen() {
         title="Review submitted!"
         onClose={() => {
           setSuccessVisible(false);
-          router.back();
+          router.replace(`/(client)/booking/${bookingId}`);
         }}
       />
     </SafeAreaView>

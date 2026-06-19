@@ -7,7 +7,13 @@ import ScreenHeader from "../../../../components/ui/ScreenHeader";
 import StarRating from "../../../../components/ui/StarRating";
 import ReviewCard from "../../../../components/cards/ReviewCard";
 import PrimaryButton from "../../../../components/ui/PrimaryButton";
-import { workers } from "../../../../constants/dummyData";
+import {
+  workers,
+  workerActiveJobs,
+  workerDocuments,
+} from "../../../../constants/dummyData";
+import { useBookingStore } from "../../../../store/bookingStore";
+import { colors } from "../../../../constants";
 
 const MOCK_REVIEWS = [
   {
@@ -30,6 +36,7 @@ export default function WorkerProfileScreen() {
   const router = useRouter();
   const { workerId } = useLocalSearchParams<{ workerId: string }>();
   const worker = workers.find((w) => w.id === workerId);
+  const setDraft = useBookingStore((s) => s.setDraft);
 
   if (!worker) {
     return (
@@ -54,7 +61,7 @@ export default function WorkerProfileScreen() {
       >
         <View className="w-full h-64 bg-card-dark items-center justify-center">
           {/* TODO: Replace with worker profile photo */}
-          <Ionicons name="person-circle" size={100} color="#A0A8D0" />
+          <Ionicons name="person-circle" size={100} color={colors.text.muted} />
         </View>
 
         <View className="bg-card rounded-2xl p-4 mx-4 -mt-8">
@@ -83,6 +90,23 @@ export default function WorkerProfileScreen() {
               </Text>
             </View>
           </View>
+          {(() => {
+            const activeJobs = workerActiveJobs[worker.id];
+            if (!activeJobs || activeJobs === 0) return null;
+            return (
+              <Text
+                className={`${
+                  activeJobs === 1
+                    ? "text-warning text-xs mt-1"
+                    : "text-error text-xs mt-1"
+                }`}
+              >
+                {activeJobs === 1
+                  ? "Currently handling 1 job"
+                  : `Currently handling ${activeJobs} jobs`}
+              </Text>
+            );
+          })()}
           <Text className="text-accent font-bold text-lg mt-2">
             ₱{worker.rate}/hr
           </Text>
@@ -125,18 +149,56 @@ export default function WorkerProfileScreen() {
             <ReviewCard key={r.id} review={r} />
           ))}
         </View>
+
+        <View className="bg-card rounded-2xl p-4 mx-4 mt-3">
+          <Text className="text-primary font-bold mb-3">
+            Documents Submitted
+          </Text>
+          {(() => {
+            const documents = workerDocuments[worker.id] || [];
+            if (documents.length === 0) {
+              return (
+                <Text className="text-text-secondary text-sm text-center py-4">
+                  No documents submitted yet
+                </Text>
+              );
+            }
+            return documents.map((doc) => (
+              <View
+                key={doc.id}
+                className="bg-card-light rounded-xl p-3 mb-2 flex-row items-center"
+              >
+                <Ionicons
+                  name="document-text"
+                  size={20}
+                  color={colors.accent.DEFAULT}
+                  style={{ marginRight: 8 }}
+                />
+                <View className="flex-1">
+                  <Text className="text-primary text-sm font-semibold">
+                    {doc.type}
+                  </Text>
+                  <Text className="text-text-muted text-xs">
+                    {doc.uploadDate}
+                  </Text>
+                </View>
+              </View>
+            ));
+          })()}
+        </View>
       </ScrollView>
 
       <View className="absolute bottom-0 left-0 right-0 bg-primary-white p-4 border-t border-divider">
         <PrimaryButton
           label="Book Now"
           fullWidth
-          onPress={() =>
-            router.push({
-              pathname: "/(client)/booking/new/step-1",
-              params: { workerId },
-            })
-          }
+          onPress={() => {
+            setDraft({
+              category: worker.service,
+              workerId: worker.id,
+            });
+            router.push("/(client)/booking/new/step-1");
+          }}
         />
       </View>
     </SafeAreaView>

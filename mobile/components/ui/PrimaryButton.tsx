@@ -1,5 +1,6 @@
 import React from "react";
 import { ActivityIndicator, Pressable, Text } from "react-native";
+import { colors } from "../../constants";
 
 type Props = {
   label: string;
@@ -18,16 +19,16 @@ export const PrimaryButton: React.FC<Props> = ({
 }) => {
   return (
     <Pressable
-      className={`bg-accent rounded-xl py-4 px-6 items-center justify-center ${
+      className={`bg-primary rounded-xl py-4 px-6 items-center justify-center ${
         fullWidth ? "w-full" : ""
       } ${disabled ? "opacity-50" : ""}`}
       onPress={onPress}
       disabled={disabled || loading}
     >
       {loading ? (
-        <ActivityIndicator color="#FFFFFF" />
+        <ActivityIndicator color={colors.white} />
       ) : (
-        <Text className="text-primary font-semibold">{label}</Text>
+        <Text className="text-white font-semibold">{label}</Text>
       )}
     </Pressable>
   );

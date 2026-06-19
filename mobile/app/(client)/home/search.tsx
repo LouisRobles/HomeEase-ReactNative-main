@@ -9,15 +9,16 @@ import { workers } from "../../../constants/dummyData";
 import FilterSortBottomSheet from "../../../components/bottom-sheets/FilterSortBottomSheet";
 import type { BottomSheetHandle } from "../../../components/bottom-sheets/BottomSheetWrapper";
 import LoadingSkeleton from "../../../components/feedback/LoadingSkeleton";
-
-const RECENT = ["Plumbing", "Cleaning", "Electrical"];
+import { useSearchStore } from "../../../store/searchStore";
 
 export default function SearchScreen() {
   const router = useRouter();
   const [query, setQuery] = useState("");
-  const [recentSearches, setRecentSearches] = useState(RECENT);
   const [searching, setSearching] = useState(false);
   const filterRef = useRef<BottomSheetHandle | null>(null);
+  const recentSearches = useSearchStore((s) => s.recentSearches);
+  const addSearch = useSearchStore((s) => s.addSearch);
+  const clearSearches = useSearchStore((s) => s.clearSearches);
 
   const normalizedQuery = query.trim().toLowerCase();
   const filtered = normalizedQuery
@@ -35,6 +36,7 @@ export default function SearchScreen() {
       return;
     }
     setSearching(true);
+    addSearch(text.trim());
     setTimeout(() => {
       setSearching(false);
     }, 400);
@@ -43,7 +45,7 @@ export default function SearchScreen() {
   const handleClearRecent = () => {
     Alert.alert("Clear recent searches?", undefined, [
       { text: "Cancel", style: "cancel" },
-      { text: "Clear", onPress: () => setRecentSearches([]) },
+      { text: "Clear", onPress: () => clearSearches() },
     ]);
   };
 
@@ -76,7 +78,10 @@ export default function SearchScreen() {
               <Pressable
                 key={term}
                 className="bg-card-light rounded-full px-4 py-2"
-                onPress={() => handleChangeQuery(term)}
+                onPress={() => {
+                  addSearch(term);
+                  handleChangeQuery(term);
+                }}
               >
                 <Text className="text-primary text-sm">{term}</Text>
               </Pressable>

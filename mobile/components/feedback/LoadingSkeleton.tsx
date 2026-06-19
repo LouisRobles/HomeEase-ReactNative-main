@@ -1,35 +1,35 @@
-import React, { useEffect } from 'react';
-import { View } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withRepeat,
-  withTiming,
-} from 'react-native-reanimated';
+import React from "react";
+import { View } from "react-native";
+import {
+  BookingListSkeleton,
+  WorkerCardSkeleton,
+  SearchResultsSkeleton,
+} from "../ui/Skeleton";
 
-export const LoadingSkeleton: React.FC = () => {
-  const opacity = useSharedValue(0.3);
+interface LoadingSkeletonProps {
+  type?: "booking" | "worker" | "search";
+  count?: number;
+}
 
-  useEffect(() => {
-    opacity.value = withRepeat(
-      withTiming(0.7, { duration: 800 }),
-      -1,
-      true
-    );
-  }, []);
+export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
+  type = "booking",
+  count = 4,
+}) => {
+  if (type === "booking") {
+    return <BookingListSkeleton />;
+  }
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    opacity: opacity.value,
-  }));
+  if (type === "search") {
+    return <SearchResultsSkeleton />;
+  }
 
+  // Worker card type
   return (
     <View className="p-4">
-      {[1, 2, 3].map((i) => (
-        <Animated.View
-          key={i}
-          className="bg-card rounded-2xl h-20 mb-3"
-          style={animatedStyle}
-        />
+      {Array.from({ length: count }).map((_, i) => (
+        <View key={i} className="mb-4">
+          <WorkerCardSkeleton />
+        </View>
       ))}
     </View>
   );

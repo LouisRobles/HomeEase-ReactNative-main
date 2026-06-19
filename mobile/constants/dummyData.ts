@@ -46,6 +46,14 @@ export const workers = [
   }
 ] as const;
 
+export const workerActiveJobs: Record<string, number> = {
+  "w1": 1,
+  "w2": 0,
+  "w3": 2,
+  "w4": 1,
+  "w5": 0,
+};
+
 export const categories = [
   { id: 'plumbing', name: 'Plumbing', count: 24 },
   { id: 'electrical', name: 'Electrical', count: 18 },
@@ -65,7 +73,7 @@ export const bookings = [
     date: '2026-03-01',
     status: 'Pending',
     amount: 400,
-    paymentMethod: 'GCash'
+    paymentMethod: 'Cash'
   },
   {
     id: 'BK-002',
@@ -117,6 +125,33 @@ export const transactions = [
     id: 'TXN-003',
     bookingId: 'BK-002',
     amount: 500,
+    method: 'Maya',
+    status: 'Completed',
+    date: '2026-02-28'
+  }
+] as const;
+
+export const workerTransactions = [
+  {
+    id: 'TXN-001',
+    bookingId: 'BK-003',
+    amount: 540,
+    method: 'GCash',
+    status: 'Completed',
+    date: '2026-02-20'
+  },
+  {
+    id: 'TXN-002',
+    bookingId: 'BK-001',
+    amount: 360,
+    method: 'Cash',
+    status: 'Pending',
+    date: '2026-03-01'
+  },
+  {
+    id: 'TXN-003',
+    bookingId: 'BK-002',
+    amount: 450,
     method: 'Maya',
     status: 'Completed',
     date: '2026-02-28'
@@ -184,7 +219,7 @@ export const notifications = [
 
 export const jobRequests = [
   {
-    id: 'req1',
+    id: 'BK-001',
     client: 'Carlo Mendoza',
     service: 'House Cleaning',
     date: '2026-03-01',
@@ -192,7 +227,7 @@ export const jobRequests = [
     status: 'Pending'
   },
   {
-    id: 'req2',
+    id: 'BK-002',
     client: 'Liza Torres',
     service: 'Plumbing',
     date: '2026-03-02',
@@ -200,4 +235,37 @@ export const jobRequests = [
     status: 'Pending'
   }
 ] as const;
+
+export const workerDocuments: Record<string, Array<{
+  id: string;
+  type: string;
+  uploadDate: string;
+  status: 'Approved' | 'Pending' | 'Rejected';
+}>> = {
+  "w1": [
+    { id: 'd1', type: 'Government ID', uploadDate: '2026-01-15', status: 'Approved' },
+    { id: 'd2', type: 'License/Certification', uploadDate: '2026-01-16', status: 'Approved' },
+    { id: 'd3', type: 'Insurance Certificate', uploadDate: '2026-01-20', status: 'Approved' }
+  ],
+  "w2": [
+    { id: 'd4', type: 'Government ID', uploadDate: '2026-02-10', status: 'Approved' },
+    { id: 'd5', type: 'License/Certification', uploadDate: '2026-02-11', status: 'Approved' },
+    { id: 'd6', type: 'Insurance Certificate', uploadDate: '2026-02-15', status: 'Pending' }
+  ],
+  "w3": [
+    { id: 'd7', type: 'Government ID', uploadDate: '2026-02-20', status: 'Approved' },
+    { id: 'd8', type: 'License/Certification', uploadDate: '2026-02-21', status: 'Rejected' },
+    { id: 'd9', type: 'Insurance Certificate', uploadDate: '2026-02-25', status: 'Pending' }
+  ],
+  "w4": [
+    { id: 'd10', type: 'Government ID', uploadDate: '2026-01-05', status: 'Approved' },
+    { id: 'd11', type: 'License/Certification', uploadDate: '2026-01-06', status: 'Approved' },
+    { id: 'd12', type: 'Insurance Certificate', uploadDate: '2026-01-10', status: 'Approved' }
+  ],
+  "w5": [
+    { id: 'd13', type: 'Government ID', uploadDate: '2026-03-01', status: 'Pending' },
+    { id: 'd14', type: 'License/Certification', uploadDate: '2026-03-02', status: 'Pending' },
+    { id: 'd15', type: 'Insurance Certificate', uploadDate: '2026-03-05', status: 'Approved' }
+  ]
+};
 

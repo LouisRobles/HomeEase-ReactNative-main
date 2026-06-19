@@ -1,8 +1,10 @@
 import React from "react";
-import { View, Text, ScrollView, Pressable } from "react-native";
+import { View, Text, ScrollView, Pressable, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
+import { colors } from "../constants";
+import { icons } from "@/constants/icons";
 
 type Role = "client" | "worker";
 type Intent = "signin" | "signup";
@@ -30,19 +32,19 @@ export default function RoleSelectionScreen() {
           paddingBottom: 40,
         }}
       >
-        <Text className="text-primary text-2xl font-bold text-center mb-10">
+        <Text className="text-primary text-3xl font-bold text-center mb-10">
           Select Your Role
         </Text>
 
         {/* Client Option */}
         <Pressable
-          className="bg-card-light rounded-2xl p-6 mb-6 items-center"
+          className="bg-card-dark border-2 border-primary rounded-2xl p-6 mb-6 items-center"
           onPress={() => handleRoleSelect("client")}
         >
           {/* TODO: Replace with client illustration */}
           <View className="items-center mb-4">
-            <View className="w-20 h-20 bg-accent/50 rounded-full items-center justify-center">
-              <Ionicons name="person-outline" size={48} color="#4B5FD6" />
+            <View className="w-40 h-40 bg-card-light rounded-full items-center justify-center">
+              <Image source={icons.client} style={{ width: 80, height: 80 }} />
             </View>
           </View>
           <Text className="text-primary font-bold text-xl text-center">
@@ -55,16 +57,16 @@ export default function RoleSelectionScreen() {
 
         {/* Worker Option */}
         <Pressable
-          className="bg-card-light rounded-2xl p-6 items-center"
+          className="bg-card-dark border-2 border-accent rounded-2xl p-6 items-center"
           onPress={() => handleRoleSelect("worker")}
         >
           {/* TODO: Replace with worker illustration */}
           <View className="items-center mb-4">
-            <View className="w-20 h-20 bg-gold/20 rounded-full items-center justify-center">
-              <Ionicons name="construct-outline" size={48} color="#F5C542" />
+            <View className="w-40 h-40 bg-card-light rounded-full items-center justify-center">
+              <Image source={icons.worker} style={{ width: 80, height: 80 }} />
             </View>
           </View>
-          <Text className="text-primary font-bold text-xl text-center">
+          <Text className="text-accent font-bold text-xl text-center">
             Service Worker
           </Text>
           <Text className="text-text-secondary text-center mt-1">

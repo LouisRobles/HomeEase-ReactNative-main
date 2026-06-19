@@ -3,6 +3,7 @@ import { View, Text, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import StatusBadge from "../ui/StatusBadge";
 import type { StatusType } from "../ui/StatusBadge";
+import { colors } from "../../constants";
 
 type Cert = {
   id: string;
@@ -38,10 +39,10 @@ export const CertificationCard: React.FC<Props> = ({
       </Text>
       <View className="flex-row mt-2">
         <Pressable onPress={onEdit} className="p-2">
-          <Ionicons name="pencil-outline" size={18} color="#A0A8D0" />
+          <Ionicons name="pencil-outline" size={18} color={colors.text.muted} />
         </Pressable>
         <Pressable onPress={onDelete} className="p-2">
-          <Ionicons name="trash-outline" size={18} color="#EF4444" />
+          <Ionicons name="trash-outline" size={18} color={colors.error} />
         </Pressable>
       </View>
     </Pressable>

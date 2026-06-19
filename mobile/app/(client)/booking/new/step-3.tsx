@@ -1,11 +1,17 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useMemo } from "react";
 import { View, Text, ScrollView, Alert, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import ScreenHeader from "../../../../components/ui/ScreenHeader";
 import StepperHorizontal from "../../../../components/steppers/StepperHorizontal";
 import PrimaryButton from "../../../../components/ui/PrimaryButton";
+import InputField from "../../../../components/ui/InputField";
+import PriceBreakdownCard from "../../../../components/ui/PriceBreakdown";
 import { useBookingStore } from "../../../../store/bookingStore";
+import {
+  calculatePriceBreakdown,
+  getTipSuggestions,
+} from "../../../../utils/pricing";
 import PaymentMethodBottomSheet from "../../../../components/bottom-sheets/PaymentMethodBottomSheet";
 import GenericConfirmationModal from "../../../../components/modals/GenericConfirmationModal";
 import type { BottomSheetHandle } from "../../../../components/bottom-sheets/BottomSheetWrapper";
@@ -19,6 +25,9 @@ export default function BookingStep3Screen() {
   );
   const [confirmVisible, setConfirmVisible] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [tipAmount, setTipAmount] = useState<number>(draft.tip || 0);
+  const [customTip, setCustomTip] = useState<string>("");
+  const [showCustomTip, setShowCustomTip] = useState(false);
   const paymentRef = useRef<BottomSheetHandle | null>(null);
 
   const paymentLabel =
@@ -32,6 +41,12 @@ export default function BookingStep3Screen() {
             ? "Cash"
             : null;
 
+  // Calculate price breakdown using utility
+  const priceBreakdown = useMemo(() => {
+    const baseAmount = draft.estimatedPrice > 0 ? draft.estimatedPrice : 400;
+    return calculatePriceBreakdown(baseAmount, 1, 0, tipAmount);
+  }, [draft.estimatedPrice, tipAmount]);
+
   const handleConfirmBooking = () => {
     setConfirmVisible(true);
   };
@@ -40,7 +55,11 @@ export default function BookingStep3Screen() {
     setConfirmVisible(false);
     setLoading(true);
     try {
-      router.push("/(client)/booking/payment");
+      // Save the final payment method to the store
+      setDraft({ paymentMethod });
+
+      // Navigate to success screen
+      router.push("/(client)/booking/success");
     } catch (err) {
       Alert.alert("Error", "Failed to process booking");
     } finally {
@@ -88,9 +107,73 @@ export default function BookingStep3Screen() {
           </Text>
         </Pressable>
 
-        <View className="flex-row justify-between items-center mt-6">
-          <Text className="text-primary font-bold">Total</Text>
-          <Text className="text-accent font-bold text-lg">₱400.00</Text>
+        <Text className="text-text-secondary text-sm mb-1 mt-4">Add a Tip</Text>
+        <View className="flex-row gap-2 flex-wrap mt-1">
+          {[0, 20, 50, 100].map((amount) => (
+            <Pressable
+              key={amount}
+              className={
+                tipAmount === amount
+                  ? "bg-accent rounded-xl px-4 py-2"
+                  : "bg-card rounded-xl px-4 py-2"
+              }
+              onPress={() => {
+                setTipAmount(amount);
+                setShowCustomTip(false);
+                setCustomTip("");
+                setDraft({ tip: amount });
+              }}
+            >
+              <Text
+                className={
+                  tipAmount === amount
+                    ? "text-primary font-semibold text-sm"
+                    : "text-text-secondary text-sm"
+                }
+              >
+                {amount === 0 ? "No Tip" : `₱${amount}`}
+              </Text>
+            </Pressable>
+          ))}
+          <Pressable
+            className={
+              showCustomTip
+                ? "bg-accent rounded-xl px-4 py-2"
+                : "bg-card rounded-xl px-4 py-2"
+            }
+            onPress={() => setShowCustomTip(true)}
+          >
+            <Text
+              className={
+                showCustomTip
+                  ? "text-primary font-semibold text-sm"
+                  : "text-text-secondary text-sm"
+              }
+            >
+              Custom
+            </Text>
+          </Pressable>
+        </View>
+
+        {showCustomTip && (
+          <View className="mt-3">
+            <InputField
+              label=""
+              value={customTip}
+              onChangeText={(value) => {
+                setCustomTip(value);
+                const parsedValue = parseFloat(value) || 0;
+                setTipAmount(parsedValue);
+                setDraft({ tip: parsedValue });
+              }}
+              placeholder="Enter custom amount"
+              keyboardType="numeric"
+            />
+          </View>
+        )}
+
+        <View className="mt-6">
+          <PriceBreakdownCard breakdown={priceBreakdown} detailed={true} />
         </View>
 
         <View className="mt-8">

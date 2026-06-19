@@ -1,17 +1,26 @@
-import React, { useState } from "react";
-import { View, Text, ScrollView, Pressable, Alert } from "react-native";
+import React, { useState, useRef } from "react";
+import { View, Text, ScrollView, Pressable, TextInput } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import InputField from "../../components/ui/InputField";
-import PrimaryButton from "../../components/ui/PrimaryButton";
-import { useAuthStore } from "../../store/authStore";
-import { isValidEmail, isValidPassword } from "../../utils/validators";
+import { InputField } from "../../components/ui/InputField";
+import { PrimaryButton } from "../../components/ui/PrimaryButton";
+import { useAuth } from "../../hooks/useAuth";
+import {
+  validateEmail,
+  validatePassword,
+  validateName,
+  validatePhone,
+  validatePasswordMatch,
+} from "../../utils/validators";
+import { useToastContext } from "../../contexts/ToastContext";
 
 export default function SignUpScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ role?: string }>();
   const role = (params.role as string) || "client";
-  const setUser = useAuthStore((s) => s.setUser);
+  const { signup, loading, clearError } = useAuth();
+  const toast = useToastContext();
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -19,61 +28,132 @@ export default function SignUpScreen() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [acceptedTerms, setAcceptedTerms] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // Error states
+  const [nameError, setNameError] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [phoneError, setPhoneError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [confirmPasswordError, setConfirmPasswordError] = useState("");
+
+  const fullNameRef = useRef<TextInput>(null);
+  const emailRef = useRef<TextInput>(null);
+  const phoneRef = useRef<TextInput>(null);
+  const passwordRef = useRef<TextInput>(null);
+  const confirmPasswordRef = useRef<TextInput>(null);
+
+  // Real-time validation handlers
+  const handleNameChange = (text: string) => {
+    setFullName(text);
+    if (text.trim()) {
+      const validation = validateName(text);
+      setNameError(validation.error || "");
+    } else {
+      setNameError("");
+    }
+  };
+
+  const handleEmailChange = (text: string) => {
+    setEmail(text);
+    if (text.trim()) {
+      const validation = validateEmail(text);
+      setEmailError(validation.error || "");
+    } else {
+      setEmailError("");
+    }
+  };
+
+  const handlePhoneChange = (text: string) => {
+    setPhone(text);
+    if (text.trim()) {
+      const validation = validatePhone(text);
+      setPhoneError(validation.error || "");
+    } else {
+      setPhoneError("");
+    }
+  };
+
+  const handlePasswordChange = (text: string) => {
+    setPassword(text);
+    if (text) {
+      const validation = validatePassword(text);
+      setPasswordError(validation.error || "");
+    } else {
+      setPasswordError("");
+    }
+  };
+
+  const handleConfirmPasswordChange = (text: string) => {
+    setConfirmPassword(text);
+    if (text && password) {
+      const validation = validatePasswordMatch(password, text);
+      setConfirmPasswordError(validation.error || "");
+    } else {
+      setConfirmPasswordError("");
+    }
+  };
 
   const handleSignUp = async () => {
+    // Validate all fields
+    const nameValidation = validateName(fullName);
+    const emailValidation = validateEmail(email);
+    const phoneValidation = validatePhone(phone);
+    const passwordValidation = validatePassword(password);
+    const confirmPasswordValidation = validatePasswordMatch(
+      password,
+      confirmPassword,
+    );
+
+    // Set errors
+    setNameError(nameValidation.error || "");
+    setEmailError(emailValidation.error || "");
+    setPhoneError(phoneValidation.error || "");
+    setPasswordError(passwordValidation.error || "");
+    setConfirmPasswordError(confirmPasswordValidation.error || "");
+
+    // Check if all valid
     if (
-      !fullName.trim() ||
-      !email.trim() ||
-      !phone.trim() ||
-      !password ||
-      !confirmPassword
+      !nameValidation.valid ||
+      !emailValidation.valid ||
+      !phoneValidation.valid ||
+      !passwordValidation.valid ||
+      !confirmPasswordValidation.valid
     ) {
-      Alert.alert("Error", "Please fill in all fields");
+      toast.error("Please fix all errors before continuing");
       return;
     }
-    if (!isValidEmail(email)) {
-      Alert.alert("Error", "Please enter a valid email address");
-      return;
-    }
-    if (!isValidPassword(password)) {
-      Alert.alert(
-        "Error",
-        "Password must be at least 8 characters with uppercase and a number",
-      );
-      return;
-    }
-    if (phone.length < 10) {
-      Alert.alert("Error", "Please enter a valid phone number");
-      return;
-    }
-    if (password !== confirmPassword) {
-      Alert.alert("Error", "Passwords do not match");
-      return;
-    }
+
     if (!acceptedTerms) {
-      Alert.alert("Error", "Please accept the Terms and Conditions");
+      toast.warning("Please accept the Terms and Conditions");
       return;
     }
-    setLoading(true);
+
     try {
-      const userData = {
-        id: Math.random().toString(36).substr(2, 9),
-        name: fullName,
+      clearError();
+      await signup({
+        fullName,
         email,
+        phone,
+        password,
         role: role as "client" | "worker",
-      };
-      setUser(userData);
+      });
+
+      toast.success("Account created successfully");
+
       // Workers go to KYC flow, clients go to OTP verification
       if (role === "worker") {
         router.push({ pathname: "/(kyc)/landing", params: { role } });
       } else {
-        router.push("/(auth)/otp-verification");
+        router.push({
+          pathname: "/(auth)/otp-verification",
+          params: { email },
+        });
       }
-    } catch (err) {
-      Alert.alert("Error", "Sign up failed. Please try again.");
-    } finally {
-      setLoading(false);
+    } catch (err: any) {
+      const errorMsg = err?.message || "An error occurred";
+      toast.error(errorMsg);
     }
   };
 
@@ -88,47 +168,145 @@ export default function SignUpScreen() {
           <Text className="text-primary text-2xl font-bold">
             Create Account
           </Text>
+          <Text className="text-text-secondary mt-1">
+            {role === "worker"
+              ? "Join as a Service Provider"
+              : "Join as a Client"}
+          </Text>
         </View>
 
-        <InputField
-          label="Full Name"
-          value={fullName}
-          onChangeText={setFullName}
-          placeholder="Enter your full name"
-        />
-        <InputField
-          label="Email"
-          value={email}
-          onChangeText={setEmail}
-          placeholder="Enter your email"
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
-        <InputField
-          label="Phone"
-          value={phone}
-          onChangeText={setPhone}
-          placeholder="Enter your phone number"
-          keyboardType="phone-pad"
-        />
-        <InputField
-          label="Password"
-          value={password}
-          onChangeText={setPassword}
-          placeholder="Create a password"
-          secureTextEntry
-        />
-        <InputField
-          label="Confirm Password"
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-          placeholder="Confirm your password"
-          secureTextEntry
-        />
+        {/* Full Name */}
+        <View>
+          <InputField
+            ref={fullNameRef}
+            label="Full Name"
+            value={fullName}
+            onChangeText={handleNameChange}
+            placeholder="Enter your full name"
+            returnKeyType="next"
+            onSubmitEditing={() => emailRef.current?.focus()}
+            editable={!loading}
+          />
+          {nameError && (
+            <View className="flex-row items-center gap-1 mt-1 mb-2">
+              <Ionicons name="alert-circle" size={14} color="#EF4444" />
+              <Text className="text-error text-xs">{nameError}</Text>
+            </View>
+          )}
+        </View>
 
+        {/* Email */}
+        <View>
+          <InputField
+            ref={emailRef}
+            label="Email"
+            value={email}
+            onChangeText={handleEmailChange}
+            placeholder="Enter your email"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            returnKeyType="next"
+            onSubmitEditing={() => phoneRef.current?.focus()}
+            editable={!loading}
+          />
+          {emailError && (
+            <View className="flex-row items-center gap-1 mt-1 mb-2">
+              <Ionicons name="alert-circle" size={14} color="#EF4444" />
+              <Text className="text-error text-xs">{emailError}</Text>
+            </View>
+          )}
+        </View>
+
+        {/* Phone */}
+        <View>
+          <InputField
+            ref={phoneRef}
+            label="Phone"
+            value={phone}
+            onChangeText={handlePhoneChange}
+            placeholder="Enter your phone number"
+            keyboardType="phone-pad"
+            returnKeyType="next"
+            onSubmitEditing={() => passwordRef.current?.focus()}
+            editable={!loading}
+          />
+          {phoneError && (
+            <View className="flex-row items-center gap-1 mt-1 mb-2">
+              <Ionicons name="alert-circle" size={14} color="#EF4444" />
+              <Text className="text-error text-xs">{phoneError}</Text>
+            </View>
+          )}
+        </View>
+
+        {/* Password */}
+        <View className="relative">
+          <InputField
+            ref={passwordRef}
+            label="Password"
+            value={password}
+            onChangeText={handlePasswordChange}
+            placeholder="Create a password"
+            secureTextEntry={!showPassword}
+            returnKeyType="next"
+            onSubmitEditing={() => confirmPasswordRef.current?.focus()}
+            editable={!loading}
+          />
+          {passwordError && (
+            <View className="flex-row items-center gap-1 mt-1 mb-2">
+              <Ionicons name="alert-circle" size={14} color="#EF4444" />
+              <Text className="text-error text-xs">{passwordError}</Text>
+            </View>
+          )}
+          <Pressable
+            className="absolute right-3 top-10"
+            onPress={() => setShowPassword(!showPassword)}
+            disabled={loading}
+          >
+            <Ionicons
+              name={showPassword ? "eye-off" : "eye"}
+              size={20}
+              color="#666"
+            />
+          </Pressable>
+        </View>
+
+        {/* Confirm Password */}
+        <View className="relative mb-4">
+          <InputField
+            ref={confirmPasswordRef}
+            label="Confirm Password"
+            value={confirmPassword}
+            onChangeText={handleConfirmPasswordChange}
+            placeholder="Confirm your password"
+            secureTextEntry={!showConfirmPassword}
+            returnKeyType="done"
+            onSubmitEditing={handleSignUp}
+            editable={!loading}
+          />
+          {confirmPasswordError && (
+            <View className="flex-row items-center gap-1 mt-1 mb-2">
+              <Ionicons name="alert-circle" size={14} color="#EF4444" />
+              <Text className="text-error text-xs">{confirmPasswordError}</Text>
+            </View>
+          )}
+          <Pressable
+            className="absolute right-3 top-10"
+            onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+            disabled={loading}
+          >
+            <Ionicons
+              name={showConfirmPassword ? "eye-off" : "eye"}
+              size={20}
+              color="#666"
+            />
+          </Pressable>
+        </View>
+
+        {/* Terms Checkbox */}
         <Pressable
           className="flex-row items-center mb-6"
           onPress={() => setAcceptedTerms(!acceptedTerms)}
+          disabled={loading}
         >
           <View
             className={`w-5 h-5 rounded border-2 mr-2 items-center justify-center ${
@@ -141,7 +319,12 @@ export default function SignUpScreen() {
           </View>
           <Text className="text-text-secondary text-sm flex-1">
             I agree to the{" "}
-            <Text className="text-accent">Terms and Conditions</Text>
+            <Text
+              className="text-accent underline"
+              onPress={() => router.push("/terms-conditions")}
+            >
+              Terms and Conditions
+            </Text>
           </Text>
         </Pressable>
 
@@ -154,7 +337,8 @@ export default function SignUpScreen() {
 
         <Pressable
           className="mt-6 flex-row justify-center"
-          onPress={() => router.push("/(auth)/sign-in")}
+          disabled={loading}
+          onPress={() => router.replace("/(auth)/sign-in")}
         >
           <Text className="text-text-secondary">Already have an account? </Text>
           <Text className="text-accent font-semibold">Sign In</Text>

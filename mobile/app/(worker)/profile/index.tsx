@@ -5,12 +5,16 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import StarRating from "../../../components/ui/StarRating";
 import LogoutConfirmationModal from "../../../components/modals/LogoutConfirmationModal";
+import { useAuthStore } from "../../../store/authStore";
+import { colors } from "../../../constants";
 
 const MENU = [
   { label: "Edit Profile", path: "/(worker)/profile/edit" },
   { label: "My Skills & Services", path: "/(worker)/profile/skills" },
   { label: "Set Availability", path: "/(worker)/profile/availability" },
   { label: "My Certifications", path: "/(worker)/profile/certifications" },
+  { label: "My Reviews", path: "/(worker)/profile/reviews" },
+  { label: "Resume Analysis (AI)", path: "/(worker)/profile/resume-preview" },
   { label: "Payout Method", path: "/(worker)/earnings/payout" },
   { label: "Change Password", path: "/(worker)/profile/change-password" },
   {
@@ -23,6 +27,7 @@ const MENU = [
 
 export default function WorkerProfileScreen() {
   const router = useRouter();
+  const user = useAuthStore((s) => s.user);
   const [logoutVisible, setLogoutVisible] = useState(false);
 
   return (
@@ -30,15 +35,19 @@ export default function WorkerProfileScreen() {
       <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
         <View className="bg-card rounded-2xl p-5 mx-4 mt-4 flex-row items-center">
           <View className="w-16 h-16 bg-accent rounded-full items-center justify-center mr-3">
-            <Ionicons name="person" size={32} color="#FFFFFF" />
+            <Ionicons name="person" size={32} color={colors.white} />
           </View>
           <View className="flex-1">
             <View className="flex-row items-center">
               <Text className="text-primary font-bold text-lg">
-                Dominic Paulo R. Dela Cruz
+                {user?.name || "Worker"}
               </Text>
               <View className="ml-1">
-                <Ionicons name="checkmark-circle" size={18} color="#4CAF50" />
+                <Ionicons
+                  name="checkmark-circle"
+                  size={18}
+                  color={colors.success}
+                />
               </View>
             </View>
             <Text className="text-text-secondary text-xs">
@@ -69,19 +78,31 @@ export default function WorkerProfileScreen() {
         <View className="bg-primary-white rounded-2xl p-4 mx-4 mt-3">
           <Text className="text-primary font-bold mb-2">Contact</Text>
           <View className="bg-card-light rounded-xl p-3 mb-2 flex-row items-center">
-            <Ionicons name="call-outline" size={16} color="#4B5FD6" />
+            <Ionicons
+              name="call-outline"
+              size={16}
+              color={colors.primary.DEFAULT}
+            />
             <Text className="text-primary ml-2">09192129330</Text>
             <Text className="text-text-secondary text-xs ml-2">
               Phone Number
             </Text>
           </View>
           <View className="bg-card-light rounded-xl p-3 mb-2 flex-row items-center">
-            <Ionicons name="mail-outline" size={16} color="#4B5FD6" />
-            <Text className="text-primary ml-2">paulodelacruz28@gmail.com</Text>
+            <Ionicons
+              name="mail-outline"
+              size={16}
+              color={colors.primary.DEFAULT}
+            />
+            <Text className="text-primary ml-2">{user?.email || "N/A"}</Text>
             <Text className="text-text-secondary text-xs ml-2">E-mail</Text>
           </View>
           <View className="bg-card-light rounded-xl p-3 flex-row items-center">
-            <Ionicons name="location-outline" size={16} color="#4B5FD6" />
+            <Ionicons
+              name="location-outline"
+              size={16}
+              color={colors.primary.DEFAULT}
+            />
             <Text className="text-primary ml-2">
               San Agustin, Hagonoy, Bulacan
             </Text>
@@ -96,7 +117,11 @@ export default function WorkerProfileScreen() {
               onPress={() => router.push(item.path as any)}
             >
               <Text className="text-primary flex-1">{item.label}</Text>
-              <Ionicons name="chevron-forward" size={20} color="#A0A8D0" />
+              <Ionicons
+                name="chevron-forward"
+                size={20}
+                color={colors.text.muted}
+              />
             </Pressable>
           ))}
           <Pressable

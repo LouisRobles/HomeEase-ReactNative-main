@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { View, ScrollView, Alert } from "react-native";
+import React, { useState, useRef } from "react";
+import { View, ScrollView, Alert, TextInput } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import ScreenHeader from "../../../components/ui/ScreenHeader";
@@ -15,6 +15,9 @@ export default function EditProfileScreen() {
   const [phone, setPhone] = useState("09XX-XXX-XXXX");
   const [email] = useState(user?.email || "");
   const [loading, setLoading] = useState(false);
+
+  const nameRef = useRef<TextInput>(null);
+  const phoneRef = useRef<TextInput>(null);
 
   const handleSave = async () => {
     if (!name.trim()) {
@@ -44,17 +47,23 @@ export default function EditProfileScreen() {
       <ScreenHeader title="Edit Profile" showBack />
       <ScrollView contentContainerStyle={{ padding: 24 }}>
         <InputField
+          ref={nameRef}
           label="Full Name"
           value={name}
           onChangeText={setName}
           placeholder="Name"
+          returnKeyType="next"
+          onSubmitEditing={() => phoneRef.current?.focus()}
         />
         <InputField
+          ref={phoneRef}
           label="Phone"
           value={phone}
           onChangeText={setPhone}
           placeholder="Phone"
           keyboardType="phone-pad"
+          returnKeyType="done"
+          onSubmitEditing={handleSave}
         />
         <InputField
           label="Email"

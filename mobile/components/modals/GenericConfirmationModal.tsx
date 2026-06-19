@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import ModalWrapper from "./ModalWrapper";
 import PrimaryButton from "../ui/PrimaryButton";
 import OutlinedButton from "../ui/OutlinedButton";
+import { colors } from "../../constants";
 
 type Props = {
   visible: boolean;
@@ -27,7 +28,7 @@ export const GenericConfirmationModal: React.FC<Props> = ({
   return (
     <ModalWrapper visible={visible} onClose={onCancel}>
       <View className="items-center mb-4">
-        <Ionicons name="warning-outline" size={48} color="#F59E0B" />
+        <Ionicons name="warning-outline" size={48} color={colors.warning} />
       </View>
       <Text className="text-primary font-bold text-lg text-center">
         {title}

@@ -1,12 +1,13 @@
-import React from 'react';
-import { Stack } from 'expo-router';
+import React from "react";
+import { Stack } from "expo-router";
+import { colors } from "../../../constants";
 
 export default function BookingLayout() {
   return (
     <Stack
       screenOptions={{
         headerShown: false,
-        contentStyle: { backgroundColor: '#0A0F2C' },
+        contentStyle: { backgroundColor: colors.surface },
       }}
     />
   );

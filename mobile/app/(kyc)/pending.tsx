@@ -5,6 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import OutlinedButton from "../../components/ui/OutlinedButton";
 import { useAuthStore } from "../../store/authStore";
+import { colors } from "../../constants";
 
 export default function KycPendingScreen() {
   const router = useRouter();
@@ -16,7 +17,7 @@ export default function KycPendingScreen() {
     <SafeAreaView className="flex-1 bg-primary-white items-center justify-center px-8">
       {/* TODO: Replace with hourglass/review illustration */}
       <View className="w-32 h-32 bg-warning/20 rounded-full items-center justify-center mb-8">
-        <Ionicons name="hourglass-outline" size={80} color="#F59E0B" />
+        <Ionicons name="hourglass-outline" size={80} color={colors.warning} />
       </View>
       <Text className="text-primary text-2xl font-bold text-center">
         Verification in Progress

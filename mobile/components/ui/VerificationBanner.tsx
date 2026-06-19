@@ -1,7 +1,7 @@
-import React from 'react';
-import { View, Text, Pressable } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-
+import React from "react";
+import { View, Text, Pressable } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { colors } from "../../constants";
 type Props = {
   isVerified: boolean;
   onVerifyPress?: () => void;
@@ -14,7 +14,7 @@ export const VerificationBanner: React.FC<Props> = ({
   if (isVerified) {
     return (
       <View className="bg-success/10 border border-success rounded-xl p-3 flex-row items-center">
-        <Ionicons name="checkmark-circle" size={24} color="#4CAF50" />
+        <Ionicons name="checkmark-circle" size={24} color={colors.success} />
         <Text className="text-success font-semibold ml-2">
           Identity Verified
         </Text>
@@ -24,7 +24,7 @@ export const VerificationBanner: React.FC<Props> = ({
   return (
     <View className="bg-warning/10 border border-warning rounded-xl p-3 flex-row items-center justify-between">
       <View className="flex-row items-center">
-        <Ionicons name="warning" size={24} color="#F59E0B" />
+        <Ionicons name="warning" size={24} color={colors.warning} />
         <Text className="text-warning font-semibold ml-2">
           Verify your identity
         </Text>

@@ -6,6 +6,7 @@ import { useRouter } from "expo-router";
 import ScreenHeader from "../../../components/ui/ScreenHeader";
 import InputField from "../../../components/ui/InputField";
 import PrimaryButton from "../../../components/ui/PrimaryButton";
+import { colors } from "../../../constants";
 
 export default function ContactUsScreen() {
   const router = useRouter();
@@ -27,15 +28,27 @@ export default function ContactUsScreen() {
       <ScrollView contentContainerStyle={{ padding: 24 }}>
         <View className="bg-card rounded-2xl p-4 mb-4">
           <View className="flex-row items-center mb-3">
-            <Ionicons name="mail-outline" size={20} color="#4B5FD6" />
+            <Ionicons
+              name="mail-outline"
+              size={20}
+              color={colors.accent.DEFAULT}
+            />
             <Text className="text-primary ml-2">support@homeease.com</Text>
           </View>
           <View className="flex-row items-center mb-3">
-            <Ionicons name="call-outline" size={20} color="#4B5FD6" />
+            <Ionicons
+              name="call-outline"
+              size={20}
+              color={colors.accent.DEFAULT}
+            />
             <Text className="text-primary ml-2">(044) 123-4567</Text>
           </View>
           <View className="flex-row items-center">
-            <Ionicons name="time-outline" size={20} color="#4B5FD6" />
+            <Ionicons
+              name="time-outline"
+              size={20}
+              color={colors.accent.DEFAULT}
+            />
             <Text className="text-primary ml-2">Mon-Fri 8AM-5PM</Text>
           </View>
         </View>

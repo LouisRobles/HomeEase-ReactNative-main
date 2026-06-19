@@ -1,5 +1,5 @@
-import React from 'react';
-import { Pressable, Text } from 'react-native';
+import React from "react";
+import { Pressable, Text } from "react-native";
 
 type Props = {
   label: string;
@@ -10,21 +10,19 @@ type Props = {
 export const OutlinedButton: React.FC<Props> = ({
   label,
   onPress,
-  disabled
+  disabled,
 }) => {
   return (
     <Pressable
-      className={`border-2 border-accent rounded-xl py-4 px-6 items-center justify-center ${
-        disabled ? 'opacity-50' : ''
+      className={`border-2 border-primary rounded-xl py-4 px-6 items-center justify-center ${
+        disabled ? "opacity-50" : ""
       }`}
       onPress={onPress}
       disabled={disabled}
     >
-      <Text className="text-accent font-semibold">{label}</Text>
+      <Text className="text-primary font-semibold">{label}</Text>
     </Pressable>
   );
 };
 
 export default OutlinedButton;
-
-

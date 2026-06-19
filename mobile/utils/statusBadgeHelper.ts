@@ -1,21 +1,22 @@
 import type { StatusType } from '../components/ui/StatusBadge';
+import { colors } from '../constants';
 
 export function getStatusColor(status: StatusType): string {
   switch (status) {
     case 'Pending':
     case 'Pending KYC':
-      return '#F59E0B';
+      return colors.warning;
     case 'Accepted':
-      return '#3B82F6';
+      return colors.active;
     case 'Active':
-      return '#4B5FD6';
+      return colors.primary.DEFAULT;
     case 'Completed':
     case 'Credited':
     case 'Verified':
-      return '#4CAF50';
+      return colors.success;
     case 'Cancelled':
-      return '#EF4444';
+      return colors.error;
     default:
-      return '#6B7299';
+      return colors.text.muted;
   }
 }

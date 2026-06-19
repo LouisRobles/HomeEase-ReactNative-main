@@ -5,35 +5,42 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        // PRIMARY PALETTE - Royal Blue
         primary: {
-          DEFAULT: "#1E40AF",
-          dark: "#0C2340",
-          light: "#3B82F6",
+          DEFAULT: "#4169E1",
+          dark: "#2E50B2",
+          light: "#6B84F0",
           white: "#FFFFFF",
         },
+        // ACCENT PALETTE - Deep Orange
         accent: {
-          DEFAULT: "#0EA5E9",
-          light: "#06B6D4",
-          muted: "#0284C7",
+          DEFAULT: "#FB8B23",
+          light: "#FFA950",
+          muted: "#E57E1A",
         },
+        // CARD & CONTAINER
         card: {
-          DEFAULT: "#3B82F6",
-          light: "#60A5FA",
-          dark: "#1E40AF",
+          DEFAULT: "#FFFFFF",
+          light: "#F9FAFB",
+          dark: "#F3F4F6",
         },
-        surface: "#FFFFFF",
+        // SURFACE & BACKGROUND
+        surface: "#F3F4F6",
         white: "#FFFFFF",
+        // TEXT & TYPOGRAPHY
         text: {
           primary: "#000000",
-          secondary: "#D3D3D3",
+          secondary: "#6B7280",
           muted: "#9CA3AF",
         },
-        gold: "#F59E0B",
+        // ACCENT COLORS
+        gold: "#FB8B23",
+        // STATUS & FEEDBACK
         success: "#10B981",
         error: "#EF4444",
         warning: "#F59E0B",
         pending: "#F59E0B",
-        active: "#0EA5E9",
+        active: "#4169E1",
         completed: "#10B981",
         cancelled: "#EF4444",
         divider: "#E5E7EB",

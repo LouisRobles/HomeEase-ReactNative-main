@@ -6,6 +6,7 @@ import { useRouter } from "expo-router";
 import PrimaryButton from "../../components/ui/PrimaryButton";
 import OutlinedButton from "../../components/ui/OutlinedButton";
 import { useAuthStore } from "../../store/authStore";
+import { colors } from "../../constants";
 
 export default function KycRejectedScreen() {
   const router = useRouter();
@@ -19,7 +20,7 @@ export default function KycRejectedScreen() {
     <SafeAreaView className="flex-1 bg-primary-white items-center justify-center px-8">
       {/* TODO: Replace with rejection illustration */}
       <View className="w-32 h-32 bg-error/20 rounded-full items-center justify-center mb-8">
-        <Ionicons name="close-circle" size={80} color="#EF4444" />
+        <Ionicons name="close-circle" size={80} color={colors.error} />
       </View>
       <Text className="text-error text-2xl font-bold text-center">
         Verification Failed

@@ -8,6 +8,7 @@ import ImageSourcePickerBottomSheet from "../../../components/bottom-sheets/Imag
 import LogoutConfirmationModal from "../../../components/modals/LogoutConfirmationModal";
 import { useState } from "react";
 import type { BottomSheetHandle } from "../../../components/bottom-sheets/BottomSheetWrapper";
+import { colors } from "../../../constants";
 
 const MENU_GROUPS = [
   [
@@ -48,13 +49,13 @@ export default function ClientProfileScreen() {
         <View className="bg-card rounded-2xl p-5 mx-4 mt-4">
           <View className="flex-row items-center">
             <View className="w-20 h-20 bg-accent rounded-full items-center justify-center">
-              <Ionicons name="person" size={40} color="#FFFFFF" />
+              <Ionicons name="person" size={40} color={colors.white} />
             </View>
             <Pressable
               className="absolute bottom-0 left-14 w-8 h-8 bg-card-light rounded-full items-center justify-center"
               onPress={() => imageSheetRef.current?.expand()}
             >
-              <Ionicons name="camera" size={16} color="#FFFFFF" />
+              <Ionicons name="camera" size={16} color={colors.white} />
             </Pressable>
             <View className="ml-4 flex-1">
               <Text className="text-primary font-bold text-xl">
@@ -94,7 +95,11 @@ export default function ClientProfileScreen() {
                 onPress={() => router.push(item.path as any)}
               >
                 <Text className="text-primary flex-1">{item.label}</Text>
-                <Ionicons name="chevron-forward" size={20} color="#A0A8D0" />
+                <Ionicons
+                  name="chevron-forward"
+                  size={20}
+                  color={colors.text.muted}
+                />
               </Pressable>
             ))}
           </View>

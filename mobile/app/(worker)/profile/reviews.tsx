@@ -31,8 +31,8 @@ const WORKER_REVIEWS = [
 ];
 
 export default function WorkerReviewsScreen() {
-  const calculateAverageRating = () => {
-    if (WORKER_REVIEWS.length === 0) return 0;
+  const calculateAverageRating = (): string => {
+    if (WORKER_REVIEWS.length === 0) return "0.0";
     const sum = WORKER_REVIEWS.reduce((acc, review) => acc + review.rating, 0);
     return (sum / WORKER_REVIEWS.length).toFixed(1);
   };

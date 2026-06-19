@@ -1,5 +1,5 @@
-import React, { useRef, useState } from "react";
-import { View, Text, ScrollView, Pressable } from "react-native";
+import React, { useState } from "react";
+import { View, Text, ScrollView, Pressable, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -8,18 +8,25 @@ import StepperHorizontal from "../../components/steppers/StepperHorizontal";
 import UploadCard from "../../components/ui/UploadCard";
 import PrimaryButton from "../../components/ui/PrimaryButton";
 import OutlinedButton from "../../components/ui/OutlinedButton";
-import ImageSourcePickerBottomSheet from "../../components/bottom-sheets/ImageSourcePickerBottomSheet";
-import type { BottomSheetHandle } from "../../components/bottom-sheets/BottomSheetWrapper";
+import ErrorBanner from "../../components/ui/ErrorBanner";
+import { useImageUpload } from "../../hooks/useImageUpload";
 import { colors } from "../../constants";
 
 export default function ResumeScreen() {
   const router = useRouter();
-  const sheetRef = useRef<BottomSheetHandle | null>(null);
-  const [resumeUri, setResumeUri] = useState<string | null>(null);
+  const resumeUpload = useImageUpload();
+  const [uploading, setUploading] = useState(false);
 
-  const handleSelect = (uri: string) => {
-    setResumeUri(uri);
-    sheetRef.current?.close();
+  const handlePickResume = async () => {
+    setUploading(true);
+    try {
+      const result = await resumeUpload.pickFromGallery();
+      if (result) {
+        Alert.alert("Success", "Resume uploaded and compressed");
+      }
+    } finally {
+      setUploading(false);
+    }
   };
 
   const bulletPoints = [
@@ -52,11 +59,21 @@ export default function ResumeScreen() {
           </Text>
         </View>
 
+        <ErrorBanner
+          message={resumeUpload.error}
+          onDismiss={resumeUpload.clearError}
+        />
         <UploadCard
           label="Tap to upload your resume (PDF or image)"
-          onPress={() => sheetRef.current?.expand()}
-          preview={resumeUri ? "Resume uploaded" : undefined}
+          onPress={handlePickResume}
+          preview={resumeUpload.uri ? "Resume uploaded" : undefined}
         />
+
+        {resumeUpload.uri && resumeUpload.compressionRatio && (
+          <Text className="text-xs text-text-secondary mt-1 ml-2">
+            Compressed by {resumeUpload.compressionRatio}%
+          </Text>
+        )}
 
         <View className="mt-4 mb-6">
           <Text className="text-text-secondary text-sm font-semibold mb-2">
@@ -79,7 +96,8 @@ export default function ResumeScreen() {
 
         <PrimaryButton
           label="Submit for Verification"
-          disabled={!resumeUri}
+          disabled={!resumeUpload.uri}
+          loading={uploading}
           fullWidth
           onPress={() => router.push("/(kyc)/contract")}
         />
@@ -108,10 +126,6 @@ export default function ResumeScreen() {
           </Text>
         </Pressable>
       </ScrollView>
-      <ImageSourcePickerBottomSheet
-        innerRef={sheetRef}
-        onSelect={handleSelect}
-      />
     </SafeAreaView>
   );
 }

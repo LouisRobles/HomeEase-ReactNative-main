@@ -9,6 +9,7 @@ import OutlinedButton from "../../../../components/ui/OutlinedButton";
 import InputField from "../../../../components/ui/InputField";
 import GenericSuccessModal from "../../../../components/modals/GenericSuccessModal";
 import { useBookingStore } from "../../../../store/bookingStore";
+import { workers } from "../../../../constants/dummyData";
 
 export default function RateBookingScreen() {
   const router = useRouter();
@@ -43,9 +44,15 @@ export default function RateBookingScreen() {
       Alert.alert("Error", "Booking not found");
       return;
     }
+
+    // Look up the worker by name to get their actual ID
+    const matchedWorker = workers.find(
+      (w) => w.name === booking.worker || w.id === booking.worker,
+    );
+
     setDraft({
       category: booking.service,
-      workerId: booking.worker,
+      workerId: matchedWorker?.id ?? null,
     });
     router.push("/(client)/booking/new/step-1");
   };
@@ -67,6 +74,7 @@ export default function RateBookingScreen() {
             </Text>
           </View>
         </View>
+
         <Text className="text-text-secondary mb-2">
           How was your experience?
         </Text>
@@ -81,6 +89,7 @@ export default function RateBookingScreen() {
         <Text className="text-text-muted text-sm mb-4">
           {rating > 0 ? labels[rating - 1] : "Tap to rate"}
         </Text>
+
         <InputField
           label="Your review"
           value={review}
@@ -88,16 +97,14 @@ export default function RateBookingScreen() {
           placeholder="Share your experience..."
           multiline
         />
-        <OutlinedButton label="Add Photos" onPress={() => {}} />
+
         <View className="mt-6 gap-3">
           <PrimaryButton
             label="Submit Review"
             fullWidth
             onPress={handleSubmit}
           />
-          <View className="w-full">
-            <OutlinedButton label="Book Again" onPress={handleBookAgain} />
-          </View>
+          <OutlinedButton label="Book Again" onPress={handleBookAgain} />
         </View>
       </ScrollView>
       <GenericSuccessModal

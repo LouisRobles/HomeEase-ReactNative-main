@@ -1,13 +1,23 @@
-import React from "react";
-import { View, Text, FlatList, Pressable } from "react-native";
+import React, { useState } from "react";
+import { View, Text, FlatList, Pressable, Modal, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import ScreenHeader from "../../../../components/ui/ScreenHeader";
 import SkillCard from "../../../../components/cards/SkillCard";
+import InputField from "../../../../components/ui/InputField";
+import PrimaryButton from "../../../../components/ui/PrimaryButton";
+import OutlinedButton from "../../../../components/ui/OutlinedButton";
 import { colors } from "../../../../constants";
 
-const SKILLS = [
+type Skill = {
+  id: string;
+  name: string;
+  category: string;
+  rate: number;
+};
+
+const INITIAL_SKILLS: Skill[] = [
   { id: "s1", name: "Pipe Repair", category: "Plumbing", rate: 250 },
   { id: "s2", name: "Installation", category: "Plumbing", rate: 300 },
   { id: "s3", name: "Drain Cleaning", category: "Plumbing", rate: 280 },
@@ -15,24 +25,125 @@ const SKILLS = [
 
 export default function SkillsScreen() {
   const router = useRouter();
+  const [skills, setSkills] = useState<Skill[]>(INITIAL_SKILLS);
+  const [showModal, setShowModal] = useState(false);
+  const [skillName, setSkillName] = useState("");
+  const [skillCategory, setSkillCategory] = useState("");
+  const [skillRate, setSkillRate] = useState("");
+
+  const handleAddSkill = () => {
+    if (!skillName.trim() || !skillCategory.trim() || !skillRate.trim()) {
+      Alert.alert("Error", "Please fill in all fields.");
+      return;
+    }
+    const rate = parseFloat(skillRate);
+    if (isNaN(rate) || rate <= 0) {
+      Alert.alert("Error", "Please enter a valid rate.");
+      return;
+    }
+    const newSkill: Skill = {
+      id: String(Date.now()),
+      name: skillName.trim(),
+      category: skillCategory.trim(),
+      rate,
+    };
+    setSkills((prev) => [...prev, newSkill]);
+    setSkillName("");
+    setSkillCategory("");
+    setSkillRate("");
+    setShowModal(false);
+  };
+
+  const handleDeleteSkill = (id: string) => {
+    Alert.alert("Delete Skill", "Are you sure you want to remove this skill?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: () => setSkills((prev) => prev.filter((s) => s.id !== id)),
+      },
+    ]);
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-primary-white">
       <ScreenHeader title="Skills & Services" showBack />
       <FlatList
-        data={SKILLS}
+        data={skills}
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ padding: 16, paddingBottom: 80 }}
+        ListEmptyComponent={
+          <View className="items-center py-16">
+            <Ionicons
+              name="construct-outline"
+              size={48}
+              color={colors.text.muted}
+            />
+            <Text className="text-text-secondary mt-3">
+              No skills added yet
+            </Text>
+            <Text className="text-text-muted text-sm mt-1">
+              Tap + to add your first skill
+            </Text>
+          </View>
+        }
         renderItem={({ item }) => (
-          <SkillCard skill={item} onEdit={() => {}} onDelete={() => {}} />
+          <SkillCard
+            skill={item}
+            onEdit={() => Alert.alert("Edit", "Edit skill coming soon.")}
+            onDelete={() => handleDeleteSkill(item.id)}
+          />
         )}
       />
       <Pressable
         className="absolute bottom-6 right-6 w-14 h-14 bg-accent rounded-full items-center justify-center"
-        onPress={() => {}}
+        onPress={() => setShowModal(true)}
       >
         <Ionicons name="add" size={28} color={colors.white} />
       </Pressable>
+
+      <Modal visible={showModal} transparent animationType="slide">
+        <View className="flex-1 bg-black/40 justify-end">
+          <View className="bg-primary-white rounded-t-3xl p-6 pb-8">
+            <View className="flex-row justify-between items-center mb-6">
+              <Text className="text-primary text-xl font-bold">Add Skill</Text>
+              <Pressable onPress={() => setShowModal(false)}>
+                <Ionicons name="close" size={24} color={colors.text.primary} />
+              </Pressable>
+            </View>
+            <InputField
+              label="Skill Name"
+              value={skillName}
+              onChangeText={setSkillName}
+              placeholder="e.g. Pipe Repair"
+            />
+            <InputField
+              label="Category"
+              value={skillCategory}
+              onChangeText={setSkillCategory}
+              placeholder="e.g. Plumbing"
+            />
+            <InputField
+              label="Rate per hour (₱)"
+              value={skillRate}
+              onChangeText={setSkillRate}
+              placeholder="e.g. 250"
+              keyboardType="number-pad"
+            />
+            <View className="gap-3 mt-2">
+              <PrimaryButton
+                label="Add Skill"
+                fullWidth
+                onPress={handleAddSkill}
+              />
+              <OutlinedButton
+                label="Cancel"
+                onPress={() => setShowModal(false)}
+              />
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }

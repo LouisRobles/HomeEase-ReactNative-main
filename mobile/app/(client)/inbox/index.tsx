@@ -29,7 +29,7 @@ export default function InboxScreen() {
             <Text
               className={
                 tab === "messages"
-                  ? "text-primary font-semibold"
+                  ? "text-white font-semibold"
                   : "text-text-secondary"
               }
             >
@@ -45,7 +45,7 @@ export default function InboxScreen() {
             <Text
               className={
                 tab === "notifications"
-                  ? "text-primary font-semibold"
+                  ? "text-white font-semibold"
                   : "text-text-secondary"
               }
             >

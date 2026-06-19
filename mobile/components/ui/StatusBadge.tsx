@@ -5,6 +5,10 @@ export type StatusType =
   | "Pending"
   | "Accepted"
   | "Active"
+  | "InProgress"
+  | "QuoteSubmitted"
+  | "QuoteApproved"
+  | "Disputed"
   | "Completed"
   | "Cancelled"
   | "Credited"
@@ -30,8 +34,21 @@ export const StatusBadge: React.FC<Props> = ({ status }) => {
       textClass += " text-blue-400";
       break;
     case "Active":
+    case "InProgress":
       containerClass += " bg-accent/20";
       textClass += " text-accent";
+      break;
+    case "QuoteSubmitted":
+      containerClass += " bg-purple-500/20";
+      textClass += " text-purple-400";
+      break;
+    case "QuoteApproved":
+      containerClass += " bg-teal-500/20";
+      textClass += " text-teal-400";
+      break;
+    case "Disputed":
+      containerClass += " bg-orange-500/20";
+      textClass += " text-orange-400";
       break;
     case "Completed":
     case "Credited":
@@ -48,9 +65,17 @@ export const StatusBadge: React.FC<Props> = ({ status }) => {
       textClass += " text-primary";
   }
 
+  const displayLabel: Record<string, string> = {
+    InProgress: "In Progress",
+    QuoteSubmitted: "Quote Submitted",
+    QuoteApproved: "Quote Approved",
+    Pending: "Pending",
+    "Pending KYC": "Pending KYC",
+  };
+
   return (
     <View className={containerClass}>
-      <Text className={textClass}>{status}</Text>
+      <Text className={textClass}>{displayLabel[status] ?? status}</Text>
     </View>
   );
 };

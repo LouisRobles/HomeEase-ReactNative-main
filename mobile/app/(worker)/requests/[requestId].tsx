@@ -8,15 +8,16 @@ import StarRating from "../../../components/ui/StarRating";
 import PrimaryButton from "../../../components/ui/PrimaryButton";
 import OutlinedButton from "../../../components/ui/OutlinedButton";
 import GenericConfirmationModal from "../../../components/modals/GenericConfirmationModal";
+import { useWorkerStore } from "../../../store/workerStore";
 import { jobRequests, workerActiveJobs } from "../../../constants/dummyData";
 import { colors } from "../../../constants";
 
 export default function RequestDetailScreen() {
   const router = useRouter();
   const { requestId } = useLocalSearchParams<{ requestId: string }>();
+  const updateRequestStatus = useWorkerStore((s) => s.updateRequestStatus);
   const request = jobRequests.find((r) => r.id === requestId);
   const [declineVisible, setDeclineVisible] = useState(false);
-  const [declineReason, setDeclineReason] = useState("");
 
   if (!request) {
     return (
@@ -29,9 +30,28 @@ export default function RequestDetailScreen() {
     );
   }
 
+  const handleAccept = () => {
+    updateRequestStatus(request.id, "Accepted");
+    require("react-native").Alert.alert(
+      "Job Accepted!",
+      "The client has been notified. You can track the job from the job detail screen.",
+      [
+        {
+          text: "View Job",
+          onPress: () => router.replace(`/(worker)/requests/job/${request.id}`),
+        },
+        { text: "Go Back", onPress: () => router.back() },
+      ],
+    );
+  };
+
   const handleDeclineConfirm = () => {
     setDeclineVisible(false);
-    require("react-native").Alert.alert("Declined", "");
+    updateRequestStatus(request.id, "Declined");
+    require("react-native").Alert.alert(
+      "Declined",
+      "The job request has been declined.",
+    );
     router.back();
   };
 
@@ -39,6 +59,7 @@ export default function RequestDetailScreen() {
     <SafeAreaView className="flex-1 bg-primary-white">
       <ScreenHeader title="Job Request" showBack />
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 100 }}>
+        {/* Client info */}
         <View className="bg-card rounded-2xl p-4 mb-3 flex-row items-center">
           <View className="w-14 h-14 bg-card-light rounded-full items-center justify-center mr-3">
             <Ionicons
@@ -59,14 +80,16 @@ export default function RequestDetailScreen() {
           </View>
         </View>
 
+        {/* Service details */}
         <View className="bg-card rounded-2xl p-4 mb-3">
           <Text className="text-primary font-bold mb-2">Service</Text>
           <Text className="text-text-secondary text-sm">{request.service}</Text>
           <Text className="text-text-muted text-xs mt-2">
-            Date: {request.date} · Duration: 2 hrs
+            Date: {request.date} · Estimated duration: 2 hrs
           </Text>
         </View>
 
+        {/* Workload warning */}
         <View className="bg-card rounded-2xl p-4 mb-3">
           <Text className="text-primary font-bold mb-2">
             Your Current Workload
@@ -96,6 +119,7 @@ export default function RequestDetailScreen() {
           })()}
         </View>
 
+        {/* Location */}
         <View className="bg-card rounded-2xl p-4 mb-3">
           <Text className="text-primary font-bold mb-2">Location</Text>
           <Text className="text-text-secondary text-sm">
@@ -111,6 +135,7 @@ export default function RequestDetailScreen() {
           </View>
         </View>
 
+        {/* Earnings breakdown */}
         <View className="bg-card rounded-2xl p-4 mb-3 items-center">
           <Text className="text-text-secondary text-sm">Offered Price</Text>
           <Text className="text-accent font-bold text-4xl mt-1">
@@ -144,6 +169,7 @@ export default function RequestDetailScreen() {
           </View>
         </View>
 
+        {/* Action buttons */}
         <View className="flex-row gap-3 mt-4">
           <OutlinedButton
             label="Decline"
@@ -151,16 +177,14 @@ export default function RequestDetailScreen() {
           />
           <View className="flex-1">
             <PrimaryButton
-              label="Accept"
+              label="Accept Job"
               fullWidth
-              onPress={() => {
-                require("react-native").Alert.alert("Accepted!", "");
-                router.back();
-              }}
+              onPress={handleAccept}
             />
           </View>
         </View>
       </ScrollView>
+
       <GenericConfirmationModal
         visible={declineVisible}
         title="Decline this job?"

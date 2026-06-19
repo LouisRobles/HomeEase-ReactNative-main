@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { colors } from "@/constants";
+import { colors } from "../../constants/colors";
 
 type Props = {
   steps: string[];
@@ -31,7 +31,7 @@ export const StepperHorizontal: React.FC<Props> = ({ steps, currentStep }) => {
                 ) : (
                   <Text
                     className={`text-sm font-bold ${
-                      isActive ? "text-primary" : "text-text-muted"
+                      isActive ? "text-white" : "text-text-muted"
                     }`}
                   >
                     {index + 1}
@@ -48,7 +48,11 @@ export const StepperHorizontal: React.FC<Props> = ({ steps, currentStep }) => {
               </Text>
             </View>
             {index < steps.length - 1 && (
-              <View className="flex-1 h-px bg-divider mx-1" />
+              <View
+                className={`flex-1 h-px mx-1 ${
+                  isDone ? "bg-success" : "bg-divider"
+                }`}
+              />
             )}
           </React.Fragment>
         );

@@ -6,8 +6,10 @@ import ScreenHeader from "../../../../components/ui/ScreenHeader";
 import StepperHorizontal from "../../../../components/steppers/StepperHorizontal";
 import InputField from "../../../../components/ui/InputField";
 import PrimaryButton from "../../../../components/ui/PrimaryButton";
+import OutlinedButton from "../../../../components/ui/OutlinedButton";
 import BookingCalendar from "../../../../components/ui/BookingCalendar";
 import { useBookingStore } from "../../../../store/bookingStore";
+import { workers } from "../../../../constants/dummyData";
 
 export default function BookingStep2Screen() {
   const router = useRouter();
@@ -16,14 +18,14 @@ export default function BookingStep2Screen() {
   const [date, setDate] = useState(draft.date ?? "");
   const [instructions, setInstructions] = useState(draft.instructions ?? "");
 
+  const canNext = !!date;
+
+  const selectedWorker = workers.find((w) => w.id === draft.workerId);
+
   const getWorkerLabel = () => {
     if (!draft.workerId) return "Any available worker";
-    const workers = require("../../../../constants/dummyData").workers;
-    const worker = workers.find((w: any) => w.id === draft.workerId);
-    return worker ? worker.name : "Select a worker";
+    return selectedWorker?.name ?? "Select a worker";
   };
-
-  const canNext = !!date;
 
   return (
     <SafeAreaView className="flex-1 bg-primary-white">
@@ -40,7 +42,9 @@ export default function BookingStep2Screen() {
         {/* Service summary */}
         <View className="bg-card rounded-2xl p-4 mt-4 mb-2">
           <Text className="text-primary font-bold mb-2">Service Summary</Text>
-          <Text className="text-text-secondary text-sm">{draft.category}</Text>
+          <Text className="text-text-secondary text-sm">
+            {draft.category ?? "No category selected"}
+          </Text>
           {draft.estimatedPrice > 0 && (
             <Text className="text-accent text-sm font-semibold mt-1">
               Estimated: ₱{draft.estimatedPrice}
@@ -61,6 +65,40 @@ export default function BookingStep2Screen() {
           }}
         />
 
+        {/* Worker selection */}
+        <Text className="text-primary font-bold text-base mb-2 mt-2">
+          Preferred Worker
+        </Text>
+        <View className="bg-card rounded-2xl p-4 mb-4">
+          {draft.workerId && selectedWorker ? (
+            <View className="flex-row items-center justify-between">
+              <View>
+                <Text className="text-primary font-semibold">
+                  {selectedWorker.name}
+                </Text>
+                <Text className="text-text-secondary text-xs">
+                  {selectedWorker.service} · ₱{selectedWorker.rate}/hr
+                </Text>
+              </View>
+              <OutlinedButton
+                label="Change"
+                onPress={() => router.push("/(client)/booking/select-worker")}
+              />
+            </View>
+          ) : (
+            <View>
+              <Text className="text-text-secondary text-sm mb-3">
+                Any available worker will be assigned to your booking. You can
+                optionally choose a specific worker.
+              </Text>
+              <OutlinedButton
+                label="Choose a Worker"
+                onPress={() => router.push("/(client)/booking/select-worker")}
+              />
+            </View>
+          )}
+        </View>
+
         {/* Special instructions */}
         <InputField
           label="Special instructions (optional)"
@@ -69,20 +107,9 @@ export default function BookingStep2Screen() {
             setInstructions(t);
             setDraft({ instructions: t });
           }}
-          placeholder="Any special requests..."
+          placeholder="Any special requests or notes for the worker..."
           multiline
         />
-
-        {/* Select worker */}
-        {/* <Text className="text-text-secondary text-sm mb-1">Select Worker</Text>
-        <View className="bg-card rounded-xl p-4 flex-row justify-between">
-          <Text
-            className="text-primary"
-            onPress={() => router.push("/(client)/booking/select-worker")}
-          >
-            {getWorkerLabel()}
-          </Text>
-        </View> */}
 
         <View className="mt-8">
           <PrimaryButton
@@ -91,7 +118,10 @@ export default function BookingStep2Screen() {
             disabled={!canNext}
             onPress={() => {
               if (!canNext) {
-                Alert.alert("Please select a date to continue.");
+                Alert.alert(
+                  "Select a Date",
+                  "Please select a date to continue.",
+                );
                 return;
               }
               setDraft({ date, instructions });

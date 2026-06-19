@@ -1,35 +1,47 @@
-import React, { useRef, useState } from "react";
-import { View, Text, ScrollView } from "react-native";
+import React, { useState } from "react";
+import { View, Text, ScrollView, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import ScreenHeader from "../../components/ui/ScreenHeader";
 import StepperHorizontal from "../../components/steppers/StepperHorizontal";
 import UploadCard from "../../components/ui/UploadCard";
 import PrimaryButton from "../../components/ui/PrimaryButton";
-import ImageSourcePickerBottomSheet from "../../components/bottom-sheets/ImageSourcePickerBottomSheet";
-import type { BottomSheetHandle } from "../../components/bottom-sheets/BottomSheetWrapper";
+import ErrorBanner from "../../components/ui/ErrorBanner";
+import { useImageUpload } from "../../hooks/useImageUpload";
 
 export default function UploadIdScreen() {
   const router = useRouter();
-  const sheetRef = useRef<BottomSheetHandle | null>(null);
-  const [frontUri, setFrontUri] = useState<string | null>(null);
-  const [backUri, setBackUri] = useState<string | null>(null);
-  const [activeUpload, setActiveUpload] = useState<"front" | "back" | null>(
+  const frontUpload = useImageUpload();
+  const backUpload = useImageUpload();
+  const [uploadingWhich, setUploadingWhich] = useState<"front" | "back" | null>(
     null,
   );
 
-  const openPicker = (which: "front" | "back") => {
-    setActiveUpload(which);
-    sheetRef.current?.expand();
+  const handlePickFront = async () => {
+    setUploadingWhich("front");
+    try {
+      const result = await frontUpload.pickFromCamera();
+      if (result) {
+        Alert.alert("Success", "Front of ID captured and compressed");
+      }
+    } finally {
+      setUploadingWhich(null);
+    }
   };
 
-  const handleSelect = (uri: string) => {
-    if (activeUpload === "front") setFrontUri(uri);
-    else if (activeUpload === "back") setBackUri(uri);
-    setActiveUpload(null);
+  const handlePickBack = async () => {
+    setUploadingWhich("back");
+    try {
+      const result = await backUpload.pickFromCamera();
+      if (result) {
+        Alert.alert("Success", "Back of ID captured and compressed");
+      }
+    } finally {
+      setUploadingWhich(null);
+    }
   };
 
-  const canContinue = !!frontUri && !!backUri;
+  const canContinue = !!frontUpload.uri && !!backUpload.uri;
 
   return (
     <SafeAreaView className="flex-1 bg-primary-white">
@@ -44,32 +56,50 @@ export default function UploadIdScreen() {
         />
         <Text className="text-text-secondary text-sm mb-4">Step 1 of 4</Text>
 
+        {/* Front ID Upload */}
+        <ErrorBanner
+          message={frontUpload.error}
+          onDismiss={frontUpload.clearError}
+        />
         <UploadCard
           label="Tap to upload front of ID"
-          onPress={() => openPicker("front")}
-          preview={frontUri ? "Front uploaded" : undefined}
+          onPress={handlePickFront}
+          preview={frontUpload.uri ? "Front uploaded" : undefined}
         />
+        {frontUpload.uri && frontUpload.compressionRatio && (
+          <Text className="text-xs text-text-secondary mt-1 ml-2">
+            Compressed by {frontUpload.compressionRatio}%
+          </Text>
+        )}
+
+        {/* Back ID Upload */}
         <View className="mt-4">
+          <ErrorBanner
+            message={backUpload.error}
+            onDismiss={backUpload.clearError}
+          />
           <UploadCard
             label="Tap to upload back of ID"
-            onPress={() => openPicker("back")}
-            preview={backUri ? "Back uploaded" : undefined}
+            onPress={handlePickBack}
+            preview={backUpload.uri ? "Back uploaded" : undefined}
           />
+          {backUpload.uri && backUpload.compressionRatio && (
+            <Text className="text-xs text-text-secondary mt-1 ml-2">
+              Compressed by {backUpload.compressionRatio}%
+            </Text>
+          )}
         </View>
 
         <View className="mt-8">
           <PrimaryButton
             label="Continue"
             fullWidth
-            disabled={!canContinue}
+            disabled={!canContinue || frontUpload.loading || backUpload.loading}
+            loading={uploadingWhich === "front" || uploadingWhich === "back"}
             onPress={() => router.push("/(kyc)/selfie")}
           />
         </View>
       </ScrollView>
-      <ImageSourcePickerBottomSheet
-        innerRef={sheetRef}
-        onSelect={handleSelect}
-      />
     </SafeAreaView>
   );
 }

@@ -1,19 +1,25 @@
 import React, { useState, useRef } from "react";
-import { View, ScrollView, TextInput } from "react-native";
+import { View, ScrollView, Alert, TextInput } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import ScreenHeader from "../../../components/ui/ScreenHeader";
 import InputField from "../../../components/ui/InputField";
 import PrimaryButton from "../../../components/ui/PrimaryButton";
+import { useAuthStore } from "../../../store/authStore";
 
 export default function WorkerEditProfileScreen() {
   const router = useRouter();
-  const [name, setName] = useState("Dominic Paulo R. Dela Cruz");
-  const [phone, setPhone] = useState("09192129330");
-  const [email] = useState("paulodelacruz28@gmail.com");
-  const [bio, setBio] = useState("Licensed plumber with 10+ years experience.");
-  const [years, setYears] = useState("10");
-  const [area, setArea] = useState("Bulacan");
+  const user = useAuthStore((s) => s.user);
+  const setUser = useAuthStore((s) => s.setUser);
+
+  const [name, setName] = useState(user?.name ?? "");
+  const [phone, setPhone] = useState(user?.phone ?? "");
+  const [email] = useState(user?.email ?? "");
+  const [bio, setBio] = useState(
+    "Licensed professional with years of experience.",
+  );
+  const [years, setYears] = useState("");
+  const [area, setArea] = useState("Central Luzon");
 
   const nameRef = useRef<TextInput>(null);
   const phoneRef = useRef<TextInput>(null);
@@ -22,7 +28,20 @@ export default function WorkerEditProfileScreen() {
   const areaRef = useRef<TextInput>(null);
 
   const handleSubmit = () => {
-    require("react-native").Alert.alert("Saved");
+    if (!name.trim()) {
+      Alert.alert("Error", "Name cannot be empty.");
+      return;
+    }
+    if (!phone.trim()) {
+      Alert.alert("Error", "Phone number cannot be empty.");
+      return;
+    }
+
+    if (user) {
+      setUser({ ...user, name: name.trim(), phone: phone.trim() });
+    }
+
+    Alert.alert("Success", "Profile updated successfully.");
     router.back();
   };
 

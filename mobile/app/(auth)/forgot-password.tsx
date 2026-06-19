@@ -56,7 +56,7 @@ export default function ForgotPasswordScreen() {
           Forgot Password?
         </Text>
         <Text className="text-text-secondary mt-2 mb-6">
-          Enter your email and we'll send you a reset link to your inbox.
+          {"Enter your email and we'll send you a reset link to your inbox."}
         </Text>
 
         <InputField
@@ -79,8 +79,7 @@ export default function ForgotPasswordScreen() {
         />
 
         <Text className="text-text-secondary text-xs text-center mt-6">
-          We'll send you an email with a link to reset your password. Make sure
-          to check your spam folder if you don't see it.
+          {"We'll send you an email with a link to reset your password. Make sure to check your spam folder if you don't see it."}
         </Text>
       </ScrollView>
     </SafeAreaView>

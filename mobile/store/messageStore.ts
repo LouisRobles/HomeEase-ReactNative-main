@@ -9,7 +9,13 @@ export type Message = {
   time: string;
 };
 
-export type Conversation = (typeof DummyConversations)[number];
+export type Conversation = {
+  id: string;
+  name: string;
+  lastMessage: string;
+  time: string;
+  unread: number;
+};
 
 type MessageState = {
   conversations: Conversation[];
@@ -21,10 +27,7 @@ type MessageState = {
 };
 
 export const useMessageStore = create<MessageState>((set, get) => ({
-  conversations: ([] as Conversation[]).concat(
-    // @ts-expect-error import type-only alias
-    (DummyConversations as unknown as Conversation[]),
-  ),
+  conversations: DummyConversations.map((conversation) => ({ ...conversation })),
   messagesByConversation: {},
   typingByConversation: {},
   sendMessage: (conversationId, text) => {

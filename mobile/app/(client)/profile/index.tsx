@@ -8,11 +8,13 @@ import ImageSourcePickerBottomSheet from "../../../components/bottom-sheets/Imag
 import LogoutConfirmationModal from "../../../components/modals/LogoutConfirmationModal";
 import { useState } from "react";
 import type { BottomSheetHandle } from "../../../components/bottom-sheets/BottomSheetWrapper";
+import { useAuthStore } from "../../../store/authStore";
 import { colors } from "../../../constants";
 
 const MENU_GROUPS = [
   [
     { label: "My Reviews", path: "/(client)/profile/reviews" },
+    { label: "Payment Methods", path: "/(client)/profile/payment-methods" },
     { label: "Manage Addresses", path: "/(client)/profile/addresses" },
     { label: "Transaction History", path: "/(client)/profile/transactions" },
   ],
@@ -39,6 +41,11 @@ export default function ClientProfileScreen() {
   const router = useRouter();
   const imageSheetRef = useRef<BottomSheetHandle | null>(null);
   const [logoutVisible, setLogoutVisible] = useState(false);
+  const user = useAuthStore((s) => s.user);
+  const logout = useAuthStore((s) => s.logout);
+
+  const displayName = user?.name ?? "Guest";
+  const displayEmail = user?.email ?? "";
 
   return (
     <SafeAreaView className="flex-1 bg-primary-white">
@@ -59,10 +66,10 @@ export default function ClientProfileScreen() {
             </Pressable>
             <View className="ml-4 flex-1">
               <Text className="text-primary font-bold text-xl">
-                Carlo Mendoza
+                {displayName}
               </Text>
               <Text className="text-text-secondary text-sm">
-                carlo@email.com
+                {displayEmail}
               </Text>
               <Pressable
                 className="mt-2"
@@ -126,14 +133,13 @@ export default function ClientProfileScreen() {
       </ScrollView>
       <ImageSourcePickerBottomSheet
         innerRef={imageSheetRef}
-        onSelect={(uri) => {
-          // Handle image selection (profile photo upload)
-        }}
+        onSelect={() => {}}
       />
       <LogoutConfirmationModal
         visible={logoutVisible}
         onConfirm={() => {
           setLogoutVisible(false);
+          logout();
           router.replace("/landing");
         }}
         onCancel={() => setLogoutVisible(false)}

@@ -1,5 +1,8 @@
 import React, { createContext, useContext, useCallback } from "react";
-import { useToast as useNativeToast } from "react-native-toast-notifications";
+import {
+  useToast as useNativeToast,
+  ToastProvider as NativeToastProvider,
+} from "react-native-toast-notifications";
 
 export type ToastType = "success" | "error" | "info" | "warning";
 
@@ -21,7 +24,9 @@ export const useToastContext = () => {
   return context;
 };
 
-export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
+// Inner component that safely calls useNativeToast()
+// (it's a child of NativeToastProvider, so the hook works here)
+const ToastProviderInner: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const toast = useNativeToast();
@@ -29,6 +34,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
   const showToast = useCallback(
     (message: string, type: ToastType = "info", duration: number = 3000) => {
       toast.show(message, {
+        type,
         placement: "top",
         duration,
         textStyle: {
@@ -65,15 +71,21 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
     [showToast],
   );
 
-  const value: ToastContextType = {
-    showToast,
-    success,
-    error,
-    info,
-    warning,
-  };
-
   return (
-    <ToastContext.Provider value={value}>{children}</ToastContext.Provider>
+    <ToastContext.Provider value={{ showToast, success, error, info, warning }}>
+      {children}
+    </ToastContext.Provider>
+  );
+};
+
+// Outer component wraps with the library's provider first,
+// then renders the inner component that can safely use the hook
+export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  return (
+    <NativeToastProvider>
+      <ToastProviderInner>{children}</ToastProviderInner>
+    </NativeToastProvider>
   );
 };

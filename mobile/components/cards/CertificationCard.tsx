@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, Pressable } from "react-native";
+import { View, Text, Pressable, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import StatusBadge from "../ui/StatusBadge";
 import type { StatusType } from "../ui/StatusBadge";
@@ -27,21 +27,35 @@ export const CertificationCard: React.FC<Props> = ({
   onEdit,
   onDelete,
 }) => {
+  const handleDelete = () => {
+    Alert.alert(
+      "Delete Certification",
+      `Remove "${cert.name}" from your certifications?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Delete", style: "destructive", onPress: onDelete },
+      ],
+    );
+  };
+
   return (
-    <Pressable className="bg-card rounded-2xl p-4 mb-3" onPress={onPress}>
+    <Pressable
+      className="bg-card border-2 border-primary rounded-2xl p-4 mb-3"
+      onPress={onPress}
+    >
       <View className="flex-row justify-between items-start">
         <Text className="text-primary font-bold flex-1">{cert.name}</Text>
         <StatusBadge status={cert.status as StatusType} />
       </View>
       <Text className="text-primary text-sm mt-1">{cert.issuer}</Text>
       <Text className="text-text-muted text-xs mt-1">
-        {cert.issueDate} – {cert.expiryDate}
+        {cert.issueDate} – {cert.expiryDate || "No expiry"}
       </Text>
       <View className="flex-row mt-2">
         <Pressable onPress={onEdit} className="p-2">
           <Ionicons name="pencil-outline" size={18} color={colors.text.muted} />
         </Pressable>
-        <Pressable onPress={onDelete} className="p-2">
+        <Pressable onPress={handleDelete} className="p-2">
           <Ionicons name="trash-outline" size={18} color={colors.error} />
         </Pressable>
       </View>

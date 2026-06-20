@@ -1,26 +1,69 @@
 import "react-native-reanimated";
 import "../global.css";
-import React, { useEffect } from "react";
-import { Stack } from "expo-router";
+import React, { useEffect, useRef } from "react";
+import { useFonts } from "expo-font";
+import { Stack, useNavigationContainerRef } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { ToastProvider } from "../contexts/ToastContext";
 import { useAuthStore } from "../store/authStore";
 import { useBookingStore } from "../store/bookingStore";
+import {
+  initializeNotificationService,
+  notificationService,
+} from "../services/notificationService";
+import {
+  setupNotificationReceivedHandler,
+  setupNotificationInteractionHandler,
+} from "../utils/notificationHandlers";
+import { initializeOfflineSupport } from "../hooks/useOfflineSupport";
+import { setupGlobalErrorHandler } from "../utils/errorHandling";
 import { colors } from "../constants";
+
+// Keep splash screen visible while loading
+SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const initializeAuth = useAuthStore((state) => state.initializeAuth);
   const restoreDraft = useBookingStore((state) => state.restoreDraft);
+  const navigationRef = useNavigationContainerRef();
+  const [fontsLoaded] = useFonts({
+    // Add any custom fonts here if needed
+  });
 
   useEffect(() => {
-    // Initialize auth and booking draft on app startup
+    // Initialize all services on app startup
     const initialize = async () => {
-      await initializeAuth();
-      await restoreDraft();
+      try {
+        // Setup global error handling
+        setupGlobalErrorHandler();
+
+        // Initialize auth and booking draft
+        await initializeAuth();
+        await restoreDraft();
+
+        // Initialize offline support
+        initializeOfflineSupport();
+
+        // Initialize notifications
+        await initializeNotificationService();
+        setupNotificationReceivedHandler();
+        setupNotificationInteractionHandler(navigationRef);
+
+        console.log("[App] All services initialized");
+      } catch (error) {
+        console.error("[App] Initialization error:", error);
+      } finally {
+        // Hide splash screen when ready
+        if (fontsLoaded) {
+          await SplashScreen.hideAsync();
+        }
+      }
     };
+
     initialize();
-  }, [initializeAuth, restoreDraft]);
+  }, [initializeAuth, restoreDraft, fontsLoaded]);
 
   return (
     <GestureHandlerRootView className="flex-1 bg-primary-white">

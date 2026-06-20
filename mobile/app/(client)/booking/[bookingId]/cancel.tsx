@@ -14,7 +14,7 @@ import { colors } from "../../../../constants";
 const REASONS = [
   "Changed my mind",
   "Worker taking too long",
-  "Found another",
+  "Found another service",
   "Emergency",
   "Other",
 ];
@@ -22,17 +22,28 @@ const REASONS = [
 export default function CancelBookingScreen() {
   const router = useRouter();
   const { bookingId } = useLocalSearchParams<{ bookingId: string }>();
-  const { bookings } = useBookingStore();
+  const { bookings, updateBookingStatus } = useBookingStore();
   const [reason, setReason] = useState<string | null>(null);
   const [otherText, setOtherText] = useState("");
   const [confirmVisible, setConfirmVisible] = useState(false);
 
   const booking = bookings.find((b) => b.id === bookingId);
 
+  const canConfirm =
+    !!reason && (reason !== "Other" || otherText.trim().length > 0);
+
   const handleConfirmCancel = () => {
     setConfirmVisible(false);
-    require("react-native").Alert.alert("Cancelled", "Booking cancelled");
-    router.replace("/(client)/booking");
+
+    if (bookingId) {
+      updateBookingStatus(bookingId, "Cancelled");
+    }
+
+    require("react-native").Alert.alert(
+      "Booking Cancelled",
+      "Your booking has been cancelled successfully.",
+      [{ text: "OK", onPress: () => router.replace("/(client)/booking") }],
+    );
   };
 
   return (
@@ -44,26 +55,31 @@ export default function CancelBookingScreen() {
       >
         <View className="bg-error/10 border border-error rounded-xl p-4 flex-row items-start mb-4">
           <Ionicons name="warning-outline" size={24} color={colors.error} />
-          <Text className="text-error ml-2 flex-1">
-            Cancellation may not be refundable.
+          <Text className="text-error ml-2 flex-1 text-sm">
+            Cancellations may not be refundable depending on timing and payment
+            method.
           </Text>
         </View>
 
         {booking && (
           <View className="bg-card rounded-2xl p-4 mb-4">
             <Text className="text-primary font-bold">{booking.service}</Text>
-            <Text className="text-text-secondary text-sm">
+            <Text className="text-text-secondary text-sm mt-1">
               {booking.worker} · {booking.date} · ₱{booking.amount}
             </Text>
           </View>
         )}
 
-        <Text className="text-text-secondary text-sm mb-2">Reason</Text>
+        <Text className="text-text-secondary text-sm font-semibold mb-2">
+          Reason for cancellation
+        </Text>
         {REASONS.map((r) => (
           <Pressable
             key={r}
             className={`bg-card rounded-xl p-3 mb-2 flex-row items-center ${
-              reason === r ? "border-2 border-accent" : ""
+              reason === r
+                ? "border-2 border-accent"
+                : "border-2 border-transparent"
             }`}
             onPress={() => setReason(r)}
           >
@@ -79,36 +95,38 @@ export default function CancelBookingScreen() {
             <Text className="text-primary">{r}</Text>
           </Pressable>
         ))}
+
         {reason === "Other" && (
-          <InputField
-            label="Please specify"
-            value={otherText}
-            onChangeText={setOtherText}
-            placeholder="Reason..."
-          />
+          <View className="mt-2">
+            <InputField
+              label="Please specify"
+              value={otherText}
+              onChangeText={setOtherText}
+              placeholder="Tell us why you're cancelling..."
+              multiline
+            />
+          </View>
         )}
 
         <View className="flex-row gap-3 mt-8">
-          <OutlinedButton
-            label="Keep My Booking"
-            onPress={() => router.back()}
-          />
+          <OutlinedButton label="Keep Booking" onPress={() => router.back()} />
           <View className="flex-1">
             <DangerButton
-              label="Confirm Cancellation"
+              label="Cancel Booking"
               fullWidth
-              disabled={!reason || (reason === "Other" && !otherText.trim())}
+              disabled={!canConfirm}
               onPress={() => setConfirmVisible(true)}
             />
           </View>
         </View>
       </ScrollView>
+
       <GenericConfirmationModal
         visible={confirmVisible}
-        title="Cancel booking?"
-        message="This action cannot be undone."
-        confirmLabel="Yes, cancel"
-        cancelLabel="Keep booking"
+        title="Cancel this booking?"
+        message="This action cannot be undone. Your booking will be permanently cancelled."
+        confirmLabel="Yes, Cancel"
+        cancelLabel="Keep Booking"
         onConfirm={handleConfirmCancel}
         onCancel={() => setConfirmVisible(false)}
       />

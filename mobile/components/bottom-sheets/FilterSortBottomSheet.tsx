@@ -45,9 +45,7 @@ export const FilterSortBottomSheet: React.FC<Props> = ({
           >
             <Text
               className={
-                sort === opt.value
-                  ? "text-primary font-semibold"
-                  : "text-primary"
+                sort === opt.value ? "text-white font-semibold" : "text-primary"
               }
             >
               {opt.label}

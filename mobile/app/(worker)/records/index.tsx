@@ -55,7 +55,7 @@ export default function RecordsScreen() {
             <Text
               className={
                 tab === "Completed"
-                  ? "text-primary font-semibold text-sm"
+                  ? "text-white font-semibold text-sm"
                   : "text-text-secondary text-sm"
               }
             >
@@ -69,7 +69,7 @@ export default function RecordsScreen() {
             <Text
               className={
                 tab === "Cancelled"
-                  ? "text-primary font-semibold text-sm"
+                  ? "text-white font-semibold text-sm"
                   : "text-text-secondary text-sm"
               }
             >

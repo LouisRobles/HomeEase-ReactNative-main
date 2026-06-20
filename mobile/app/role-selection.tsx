@@ -38,12 +38,12 @@ export default function RoleSelectionScreen() {
 
         {/* Client Option */}
         <Pressable
-          className="bg-card-dark border-2 border-primary rounded-2xl p-6 mb-6 items-center"
+          className="bg-card-light border-2 border-primary rounded-2xl p-6 mb-6 items-center"
           onPress={() => handleRoleSelect("client")}
         >
           {/* TODO: Replace with client illustration */}
           <View className="items-center mb-4">
-            <View className="w-40 h-40 bg-card-light rounded-full items-center justify-center">
+            <View className="w-40 h-40 bg-card rounded-full items-center justify-center">
               <Image source={icons.client} style={{ width: 80, height: 80 }} />
             </View>
           </View>
@@ -57,12 +57,12 @@ export default function RoleSelectionScreen() {
 
         {/* Worker Option */}
         <Pressable
-          className="bg-card-dark border-2 border-accent rounded-2xl p-6 items-center"
+          className="bg-card-light border-2 border-accent rounded-2xl p-6 items-center"
           onPress={() => handleRoleSelect("worker")}
         >
           {/* TODO: Replace with worker illustration */}
           <View className="items-center mb-4">
-            <View className="w-40 h-40 bg-card-light rounded-full items-center justify-center">
+            <View className="w-40 h-40 bg-card rounded-full items-center justify-center">
               <Image source={icons.worker} style={{ width: 80, height: 80 }} />
             </View>
           </View>

@@ -13,7 +13,7 @@ type Props = {
 export const CategoryCard: React.FC<Props> = ({ category, onPress }) => {
   return (
     <Pressable
-      className="bg-card rounded-2xl p-4 items-center mb-3 mx-1 flex-1 min-w-[140]"
+      className="bg-card border-2 border-primary rounded-2xl p-4 items-center mb-3 mx-1 flex-1 min-w-[140]"
       onPress={onPress}
     >
       {/* TODO: Replace with category-specific icon SVG */}

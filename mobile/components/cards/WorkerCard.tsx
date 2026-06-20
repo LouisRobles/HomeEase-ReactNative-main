@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import StarRating from "../ui/StarRating";
-import { workerActiveJobs } from "../../constants/dummyData";
+import { useWorkerCapacity } from "../../hooks/useWorkerCapacity";
 import { colors } from "../../constants";
 
 type Worker = {
@@ -21,13 +21,16 @@ type Props = {
 };
 
 export const WorkerCard: React.FC<Props> = ({ worker, onPress }) => {
+  const { isAtCapacity, activeJobCount } = useWorkerCapacity(worker.name);
+
+  const isUnavailable = worker.status === "unavailable" || isAtCapacity;
+
   return (
     <Pressable
-      className="bg-card rounded-2xl p-4 mb-3 flex-row items-center"
+      className="bg-card border-2 border-primary rounded-2xl p-4 mb-3 flex-row items-center"
       onPress={onPress}
     >
-      {/* TODO: Replace with actual worker photo */}
-      <View className="w-12 h-12 bg-card-dark rounded-full items-center justify-center mr-3">
+      <View className="w-12 h-12 bg-primary rounded-full items-center justify-center mr-3">
         <Ionicons name="person-circle" size={40} color={colors.white} />
       </View>
       <View className="flex-1">
@@ -43,37 +46,37 @@ export const WorkerCard: React.FC<Props> = ({ worker, onPress }) => {
             ({worker.reviews} reviews)
           </Text>
         </View>
+        {activeJobCount > 0 && (
+          <Text
+            className={`text-xs mt-0.5 ${
+              isAtCapacity ? "text-error" : "text-warning"
+            }`}
+          >
+            {isAtCapacity
+              ? "At full capacity"
+              : `${activeJobCount} active job${activeJobCount > 1 ? "s" : ""}`}
+          </Text>
+        )}
       </View>
       <View className="items-end">
         <Text className="text-primary font-bold">₱{worker.rate}/hr</Text>
         <View
-          className={`px-2 py-0.5 rounded-full ${
-            worker.status === "available" ? "bg-success/20" : "bg-error/20"
+          className={`px-2 py-0.5 rounded-full mt-1 ${
+            isUnavailable ? "bg-error/20" : "bg-success/20"
           }`}
         >
           <Text
             className={`text-xs font-semibold ${
-              worker.status === "available" ? "text-success" : "text-error"
+              isUnavailable ? "text-error" : "text-success"
             }`}
           >
-            {worker.status === "available" ? "Available" : "Busy"}
+            {isAtCapacity
+              ? "Full"
+              : worker.status === "unavailable"
+                ? "Busy"
+                : "Available"}
           </Text>
         </View>
-        {worker.status !== "unavailable" &&
-          workerActiveJobs[worker.id] &&
-          workerActiveJobs[worker.id] > 0 && (
-            <Text
-              className={`${
-                workerActiveJobs[worker.id] === 1
-                  ? "text-warning text-xs mt-0.5"
-                  : "text-error text-xs mt-0.5"
-              }`}
-            >
-              {workerActiveJobs[worker.id] === 1
-                ? "1 active job"
-                : `${workerActiveJobs[worker.id]} active jobs`}
-            </Text>
-          )}
       </View>
     </Pressable>
   );

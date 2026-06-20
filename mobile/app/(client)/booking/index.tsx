@@ -18,17 +18,13 @@ export default function MyBookingsScreen() {
   const [loading, setLoading] = useState(false);
   const { bookings } = useBookingStore();
 
-  // Reset tab when screen is focused
   useFocusEffect(
     React.useCallback(() => {
       setActiveTab("Pending");
-      return () => {
-        // Cleanup if needed
-      };
+      return () => {};
     }, []),
   );
 
-  // Simulate loading on mount
   useEffect(() => {
     setLoading(true);
     const timer = setTimeout(() => {
@@ -55,7 +51,7 @@ export default function MyBookingsScreen() {
               <Text
                 className={
                   activeTab === tab
-                    ? "text-primary font-semibold text-sm"
+                    ? "text-white font-semibold text-sm"
                     : "text-text-secondary text-sm"
                 }
               >
@@ -97,9 +93,7 @@ export default function MyBookingsScreen() {
           renderItem={({ item }) => (
             <BookingCard
               booking={item}
-              onPress={() =>
-                router.push(`/(client)/booking/${item.id}/details`)
-              }
+              onPress={() => router.push(`/(client)/booking/${item.id}`)}
             />
           )}
         />

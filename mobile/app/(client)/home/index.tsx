@@ -11,6 +11,7 @@ import { WorkerCard } from "../../../components/cards/WorkerCard";
 import { NotificationBadge } from "../../../components/ui/NotificationBadge";
 import { workers, categories } from "../../../constants/dummyData";
 import { useNotificationStore } from "../../../store/notificationStore";
+import { useAuthStore } from "../../../store/authStore";
 import { FilterSortBottomSheet } from "../../../components/bottom-sheets/FilterSortBottomSheet";
 import { Skeleton } from "../../../components/ui/Skeleton";
 import type { BottomSheetHandle } from "../../../components/bottom-sheets/BottomSheetWrapper";
@@ -27,8 +28,10 @@ export default function ClientHomeScreen() {
   const unreadCount = useNotificationStore((s) => s.unreadCount);
   const filterRef = useRef<BottomSheetHandle | null>(null);
   const [loading, setLoading] = useState(true);
+  const user = useAuthStore((s) => s.user);
 
-  // Simulate loading on mount
+  const firstName = user?.name?.split(" ")[0] ?? "there";
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setLoading(false);
@@ -79,7 +82,7 @@ export default function ClientHomeScreen() {
           <>
             <View className="bg-card rounded-2xl p-5 mx-4 mt-4">
               <Text className="text-primary font-bold text-xl">
-                Good morning, Carlo! 👋
+                Good morning, {firstName}! 👋
               </Text>
               <View className="flex-row items-center mt-2">
                 <Ionicons
@@ -88,7 +91,7 @@ export default function ClientHomeScreen() {
                   color={colors.text.muted}
                 />
                 <Text className="text-text-secondary text-sm ml-1">
-                  Hagonoy, Bulacan
+                  Central Luzon, Philippines
                 </Text>
               </View>
             </View>

@@ -23,12 +23,20 @@ const MENU = [
   },
   { label: "Privacy Settings", path: "/(worker)/profile/privacy-settings" },
   { label: "Help & Support", path: "/(worker)/profile/help-support" },
+  { label: "Terms and Conditions", path: "/(worker)/profile/terms" },
+  { label: "Privacy Policy", path: "/(worker)/profile/privacy-policy" },
+  { label: "About HomeEase", path: "/(worker)/profile/about" },
 ];
 
 export default function WorkerProfileScreen() {
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
+  const logout = useAuthStore((s) => s.logout);
   const [logoutVisible, setLogoutVisible] = useState(false);
+
+  const displayName = user?.name ?? "Worker";
+  const displayEmail = user?.email ?? "—";
+  const displayPhone = user?.phone ?? "—";
 
   return (
     <SafeAreaView className="flex-1 bg-primary-white">
@@ -40,7 +48,7 @@ export default function WorkerProfileScreen() {
           <View className="flex-1">
             <View className="flex-row items-center">
               <Text className="text-primary font-bold text-lg">
-                {user?.name || "Worker"}
+                {displayName}
               </Text>
               <View className="ml-1">
                 <Ionicons
@@ -51,7 +59,7 @@ export default function WorkerProfileScreen() {
               </View>
             </View>
             <Text className="text-text-secondary text-xs">
-              Verified Professionals
+              Verified Professional
             </Text>
             <View className="flex-row items-center mt-1">
               <StarRating rating={4.8} size={14} />
@@ -64,7 +72,7 @@ export default function WorkerProfileScreen() {
 
         <View className="bg-card rounded-2xl p-4 mx-4 mt-3">
           <Text className="text-primary font-bold mb-2">
-            Skills and Experties
+            Skills and Expertise
           </Text>
           <View className="flex-row flex-wrap gap-2">
             {["Pipe Repair", "Installation", "Plumbing"].map((s) => (
@@ -83,29 +91,21 @@ export default function WorkerProfileScreen() {
               size={16}
               color={colors.primary.DEFAULT}
             />
-            <Text className="text-primary ml-2">09192129330</Text>
+            <Text className="text-primary ml-2">{displayPhone}</Text>
             <Text className="text-text-secondary text-xs ml-2">
               Phone Number
             </Text>
           </View>
-          <View className="bg-card-light rounded-xl p-3 mb-2 flex-row items-center">
+          <View className="bg-card-light rounded-xl p-3 flex-row items-center">
             <Ionicons
               name="mail-outline"
               size={16}
               color={colors.primary.DEFAULT}
             />
-            <Text className="text-primary ml-2">{user?.email || "N/A"}</Text>
-            <Text className="text-text-secondary text-xs ml-2">E-mail</Text>
-          </View>
-          <View className="bg-card-light rounded-xl p-3 flex-row items-center">
-            <Ionicons
-              name="location-outline"
-              size={16}
-              color={colors.primary.DEFAULT}
-            />
-            <Text className="text-primary ml-2">
-              San Agustin, Hagonoy, Bulacan
+            <Text className="text-primary ml-2 flex-1" numberOfLines={1}>
+              {displayEmail}
             </Text>
+            <Text className="text-text-secondary text-xs ml-2">E-mail</Text>
           </View>
         </View>
 
@@ -142,6 +142,7 @@ export default function WorkerProfileScreen() {
         visible={logoutVisible}
         onConfirm={() => {
           setLogoutVisible(false);
+          logout();
           router.replace("/landing");
         }}
         onCancel={() => setLogoutVisible(false)}

@@ -21,7 +21,7 @@ type Props = {
 export const RequestCard: React.FC<Props> = ({ request, onPress }) => {
   return (
     <Pressable
-      className="bg-card rounded-2xl p-4 mb-3 flex-row items-center"
+      className="bg-card border-2 border-primary rounded-2xl p-4 mb-3 flex-row items-center"
       onPress={onPress}
     >
       <View className="w-12 h-12 bg-card-light rounded-full items-center justify-center mr-3">

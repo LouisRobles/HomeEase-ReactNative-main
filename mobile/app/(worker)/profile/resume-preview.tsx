@@ -1,11 +1,16 @@
 import React from "react";
-import { View, Text, ScrollView, Pressable, Alert } from "react-native";
+import { View, Text, ScrollView, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import ScreenHeader from "../../../components/ui/ScreenHeader";
 import StarRating from "../../../components/ui/StarRating";
 import PrimaryButton from "../../../components/ui/PrimaryButton";
 import OutlinedButton from "../../../components/ui/OutlinedButton";
+import {
+  useWorkerProfileStore,
+  type WorkerProfileState,
+} from "../../../store/workerProfileStore";
 
 const PARSED_RESUME = {
   name: "Dominic Paulo R. Dela Cruz",
@@ -60,6 +65,12 @@ const PARSED_RESUME = {
 };
 
 export default function ResumePreviewScreen() {
+  const router = useRouter();
+  const setProfile = useWorkerProfileStore(
+    (s: WorkerProfileState) => s.setProfile,
+  );
+  const isSaved = useWorkerProfileStore((s: WorkerProfileState) => s.isSaved);
+
   const getLevelColor = (level: string) => {
     switch (level) {
       case "Expert":
@@ -69,8 +80,25 @@ export default function ResumePreviewScreen() {
       case "Intermediate":
         return { bg: "bg-warning/20", text: "text-warning" };
       default:
-        return { bg: "bg-text-muted/20", text: "text-text-muted" };
+        return { bg: "bg-card-dark", text: "text-text-muted" };
     }
+  };
+
+  const handleUseProfileData = () => {
+    setProfile({
+      name: PARSED_RESUME.name,
+      trade: PARSED_RESUME.trade,
+      yearsOfExperience: PARSED_RESUME.yearsOfExperience,
+      masteryLevel: PARSED_RESUME.masteryLevel,
+      summary: PARSED_RESUME.summary,
+      skills: PARSED_RESUME.skills.map((s) => s.name),
+      certifications: PARSED_RESUME.certifications,
+    });
+    Alert.alert(
+      "Profile Updated",
+      "Your profile has been updated with the parsed resume data. You can edit individual fields from your profile screen.",
+      [{ text: "OK", onPress: () => router.back() }],
+    );
   };
 
   return (
@@ -80,8 +108,8 @@ export default function ResumePreviewScreen() {
         className="flex-1"
         contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
       >
-        {/* SECTION 1 - AI Analysis Header Card */}
-        <View className="bg-accent rounded-2xl p-4 mx-0 mb-4">
+        {/* AI Header */}
+        <View className="bg-accent rounded-2xl p-4 mb-4">
           <View className="flex-row items-center">
             <Ionicons name="sparkles" size={24} color="#FFFFFF" />
             <Text className="text-primary font-bold text-base ml-2">
@@ -97,7 +125,7 @@ export default function ResumePreviewScreen() {
           </View>
         </View>
 
-        {/* SECTION 2 - Profile Overview Card */}
+        {/* Profile Overview */}
         <View className="bg-card rounded-2xl p-4 mb-4">
           <Text className="text-primary font-bold text-base mb-3">
             Profile Overview
@@ -133,25 +161,27 @@ export default function ResumePreviewScreen() {
           </Text>
         </View>
 
-        {/* SECTION 3 - Skills Card */}
+        {/* Skills */}
         <View className="bg-card rounded-2xl p-4 mb-4">
           <Text className="text-primary font-bold text-base mb-3">
             Extracted Skills
           </Text>
           {PARSED_RESUME.skills.map((skill, index) => {
-            const colors = getLevelColor(skill.level);
+            const lc = getLevelColor(skill.level);
             return (
               <View
                 key={index}
-                className={`flex-row items-center justify-between py-2 border-b border-divider ${
-                  index === PARSED_RESUME.skills.length - 1 ? "border-0" : ""
+                className={`flex-row items-center justify-between py-2 ${
+                  index < PARSED_RESUME.skills.length - 1
+                    ? "border-b border-divider"
+                    : ""
                 }`}
               >
                 <Text className="text-primary text-sm flex-1">
                   {skill.name}
                 </Text>
-                <View className={`${colors.bg} rounded-full px-2 py-0.5`}>
-                  <Text className={`${colors.text} text-xs font-semibold`}>
+                <View className={`${lc.bg} rounded-full px-2 py-0.5`}>
+                  <Text className={`${lc.text} text-xs font-semibold`}>
                     {skill.level}
                   </Text>
                 </View>
@@ -160,7 +190,7 @@ export default function ResumePreviewScreen() {
           })}
         </View>
 
-        {/* SECTION 4 - Experience Card */}
+        {/* Experience */}
         <View className="bg-card rounded-2xl p-4 mb-4">
           <Text className="text-primary font-bold text-base mb-3">
             Work Experience
@@ -168,8 +198,8 @@ export default function ResumePreviewScreen() {
           {PARSED_RESUME.experience.map((entry, index) => (
             <View
               key={index}
-              className={`flex-row mb-3 ${
-                index === PARSED_RESUME.experience.length - 1 ? "mb-0" : ""
+              className={`flex-row ${
+                index < PARSED_RESUME.experience.length - 1 ? "mb-3" : ""
               }`}
             >
               <View className="w-2 h-2 rounded-full bg-accent mt-1.5 mr-3 flex-shrink-0" />
@@ -188,7 +218,7 @@ export default function ResumePreviewScreen() {
           ))}
         </View>
 
-        {/* SECTION 5 - Education Card */}
+        {/* Education */}
         <View className="bg-card rounded-2xl p-4 mb-4">
           <Text className="text-primary font-bold text-base mb-3">
             Education & Training
@@ -196,8 +226,8 @@ export default function ResumePreviewScreen() {
           {PARSED_RESUME.education.map((entry, index) => (
             <View
               key={index}
-              className={`flex-row items-start mb-3 ${
-                index === PARSED_RESUME.education.length - 1 ? "mb-0" : ""
+              className={`flex-row items-start ${
+                index < PARSED_RESUME.education.length - 1 ? "mb-3" : ""
               }`}
             >
               <Ionicons name="school-outline" size={16} color="#4B5FD6" />
@@ -216,7 +246,7 @@ export default function ResumePreviewScreen() {
           ))}
         </View>
 
-        {/* SECTION 6 - Certifications Card */}
+        {/* Certifications */}
         <View className="bg-card rounded-2xl p-4 mb-4">
           <Text className="text-primary font-bold text-base mb-3">
             Certifications
@@ -224,8 +254,8 @@ export default function ResumePreviewScreen() {
           {PARSED_RESUME.certifications.map((cert, index) => (
             <View
               key={index}
-              className={`flex-row items-center mb-2 ${
-                index === PARSED_RESUME.certifications.length - 1 ? "mb-0" : ""
+              className={`flex-row items-center ${
+                index < PARSED_RESUME.certifications.length - 1 ? "mb-2" : ""
               }`}
             >
               <Ionicons name="checkmark-circle" size={16} color="#4CAF50" />
@@ -234,26 +264,26 @@ export default function ResumePreviewScreen() {
           ))}
         </View>
 
-        {/* SECTION 7 - Action Buttons */}
+        {/* Actions */}
         <View className="gap-3 mt-2">
-          <PrimaryButton
-            label="Use This Profile Data"
-            fullWidth
-            onPress={() => {
-              Alert.alert(
-                "Success",
-                "Profile data applied! Your profile has been updated with the parsed resume information.",
-              );
-            }}
-          />
-          <OutlinedButton
-            label="Edit Before Saving"
-            onPress={() => {
-              Alert.alert("Coming Soon", "Edit mode coming soon.");
-            }}
-          />
+          {isSaved ? (
+            <View className="bg-success/10 border border-success rounded-2xl p-4 items-center">
+              <Ionicons name="checkmark-circle" size={24} color="#4CAF50" />
+              <Text className="text-success font-semibold mt-2">
+                Profile data already applied
+              </Text>
+            </View>
+          ) : (
+            <PrimaryButton
+              label="Use This Profile Data"
+              fullWidth
+              onPress={handleUseProfileData}
+            />
+          )}
+          <OutlinedButton label="Go Back" onPress={() => router.back()} />
           <Text className="text-text-muted text-xs text-center mt-2">
-            AI analysis may not be 100% accurate. Please review before saving.
+            AI analysis may not be 100% accurate. Review your profile after
+            applying.
           </Text>
         </View>
       </ScrollView>

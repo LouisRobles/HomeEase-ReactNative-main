@@ -43,7 +43,7 @@ export default function RequestsScreen() {
               <Text
                 className={
                   tab === t
-                    ? "text-primary font-semibold text-sm"
+                    ? "text-white font-semibold text-sm"
                     : "text-text-secondary text-sm"
                 }
               >

@@ -18,7 +18,7 @@ type Props = {
 
 export const ReviewCard: React.FC<Props> = ({ review }) => {
   return (
-    <View className="bg-card rounded-2xl p-4 mb-3">
+    <View className="bg-card border-2 border-primary rounded-2xl p-4 mb-3">
       <View className="flex-row items-center">
         {/* TODO: Replace with reviewer profile photo */}
         <View className="w-10 h-10 bg-card-light rounded-full items-center justify-center mr-3">

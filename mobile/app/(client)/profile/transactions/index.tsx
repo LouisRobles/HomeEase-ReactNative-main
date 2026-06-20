@@ -4,13 +4,46 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import ScreenHeader from "../../../../components/ui/ScreenHeader";
 import TransactionItem from "../../../../components/list-items/TransactionItem";
-import { transactions } from "../../../../constants/dummyData";
+import EmptyState from "../../../../components/feedback/EmptyState";
+import { useBookingStore } from "../../../../store/bookingStore";
 
-const FILTERS = ["All", "This Week", "This Month"];
+const FILTERS = ["All", "This Week", "This Month"] as const;
 
 export default function TransactionsScreen() {
   const router = useRouter();
-  const [filter, setFilter] = useState("All");
+  const [filter, setFilter] = useState<(typeof FILTERS)[number]>("All");
+  const bookings = useBookingStore((s) => s.bookings);
+
+  // Derive transactions from completed bookings in the store
+  const allTransactions = bookings
+    .filter((b) => b.status === "Completed")
+    .map((b) => ({
+      id: `TXN-${b.id}`,
+      bookingId: b.id,
+      amount: b.amount,
+      method: b.paymentMethod,
+      status: "Completed",
+      date: b.date,
+    }));
+
+  const now = new Date();
+
+  const filtered = allTransactions.filter((t) => {
+    if (filter === "All") return true;
+    const txDate = new Date(t.date);
+    if (filter === "This Week") {
+      const weekAgo = new Date(now);
+      weekAgo.setDate(now.getDate() - 7);
+      return txDate >= weekAgo;
+    }
+    if (filter === "This Month") {
+      return (
+        txDate.getMonth() === now.getMonth() &&
+        txDate.getFullYear() === now.getFullYear()
+      );
+    }
+    return true;
+  });
 
   return (
     <SafeAreaView className="flex-1 bg-primary-white">
@@ -27,7 +60,7 @@ export default function TransactionsScreen() {
             <Text
               className={
                 filter === f
-                  ? "text-primary font-semibold text-sm"
+                  ? "text-white font-semibold text-sm"
                   : "text-text-secondary text-sm"
               }
             >
@@ -36,17 +69,30 @@ export default function TransactionsScreen() {
           </Pressable>
         ))}
       </View>
-      <FlatList
-        data={transactions}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={{ padding: 16 }}
-        renderItem={({ item }) => (
-          <TransactionItem
-            transaction={item}
-            onPress={() => router.push(`/(client)/transactions/${item.id}`)}
-          />
-        )}
-      />
+      {filtered.length === 0 ? (
+        <EmptyState
+          title="No transactions yet"
+          subtitle={
+            filter === "All"
+              ? "Completed bookings will appear here."
+              : `No transactions found for ${filter.toLowerCase()}.`
+          }
+        />
+      ) : (
+        <FlatList
+          data={filtered}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={{ padding: 16 }}
+          renderItem={({ item }) => (
+            <TransactionItem
+              transaction={item}
+              onPress={() =>
+                router.push(`/(client)/profile/transactions/${item.id}`)
+              }
+            />
+          )}
+        />
+      )}
     </SafeAreaView>
   );
 }

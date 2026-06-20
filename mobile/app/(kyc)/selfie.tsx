@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
-import { View, Text, ScrollView, Pressable, Alert } from "react-native";
+import { View, Text, ScrollView, Pressable, Alert, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { Ionicons } from "@expo/vector-icons";
@@ -7,8 +7,10 @@ import { useRouter } from "expo-router";
 import ScreenHeader from "../../components/ui/ScreenHeader";
 import StepperHorizontal from "../../components/steppers/StepperHorizontal";
 import PrimaryButton from "../../components/ui/PrimaryButton";
+import OutlinedButton from "../../components/ui/OutlinedButton";
 import { useAuthStore } from "../../store/authStore";
-import { colors } from "../../constants";
+import { compressImage } from "../../utils/imageCompressor";
+import { colors } from "../../constants/colors";
 
 export default function SelfieScreen() {
   const router = useRouter();
@@ -17,6 +19,7 @@ export default function SelfieScreen() {
   const [permission, requestPermission] = useCameraPermissions();
   const [cameraActive, setCameraActive] = useState(false);
   const [capturedUri, setCapturedUri] = useState<string | null>(null);
+  const [compressing, setCompressing] = useState(false);
   const isWorker = user?.role === "worker";
 
   useEffect(() => {
@@ -29,7 +32,11 @@ export default function SelfieScreen() {
     if (!permission?.granted) {
       Alert.alert(
         "Camera Permission",
-        "Camera permission is required to take a selfie",
+        "Camera access is required to take a selfie.",
+        [
+          { text: "Cancel", style: "cancel" },
+          { text: "Grant Permission", onPress: requestPermission },
+        ],
       );
       return;
     }
@@ -38,20 +45,36 @@ export default function SelfieScreen() {
 
   const handleCapture = async () => {
     if (!cameraRef.current) return;
-
+    setCompressing(true);
     try {
       const photo = await cameraRef.current.takePictureAsync({
         quality: 0.8,
         base64: false,
         skipProcessing: false,
       });
-
       if (photo?.uri) {
-        setCapturedUri(photo.uri);
+        // Automatically compress the captured selfie
+        try {
+          const compressed = await compressImage(photo.uri, 1200, 0.7);
+          setCapturedUri(compressed.uri);
+          Alert.alert(
+            "Selfie Captured",
+            `Compressed by ${compressed.compressionRatio}%`,
+            [{ text: "OK" }],
+            { cancelable: false },
+          );
+        } catch (err) {
+          // If compression fails, use original
+          setCapturedUri(photo.uri);
+          console.error("Compression failed, using original:", err);
+        }
         setCameraActive(false);
       }
-    } catch {
+    } catch (err) {
       Alert.alert("Error", "Failed to capture photo. Please try again.");
+      console.error("Capture error:", err);
+    } finally {
+      setCompressing(false);
     }
   };
 
@@ -68,41 +91,95 @@ export default function SelfieScreen() {
     setCameraActive(false);
   };
 
-  // Camera view
+  // Active camera view
   if (cameraActive && permission?.granted) {
     return (
       <SafeAreaView className="flex-1 bg-black">
         <CameraView ref={cameraRef} facing="front" style={{ flex: 1 }} />
-        <View className="absolute bottom-8 left-0 right-0 flex-row justify-between items-center px-8">
+
+        {/* Oval face guide overlay */}
+        <View
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            alignItems: "center",
+            justifyContent: "center",
+            pointerEvents: "none",
+          }}
+        >
+          <View
+            style={{
+              width: 192,
+              height: 224,
+              borderRadius: 999,
+              borderWidth: 3,
+              borderColor: "rgba(255,255,255,0.5)",
+            }}
+          />
+          <Text style={{ color: "white", fontSize: 13, marginTop: 16 }}>
+            Position your face within the oval
+          </Text>
+        </View>
+
+        {/* Camera controls */}
+        <View
+          style={{
+            position: "absolute",
+            bottom: 32,
+            left: 0,
+            right: 0,
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            paddingHorizontal: 32,
+          }}
+        >
           <Pressable
-            className="w-12 h-12 rounded-full bg-black/40 items-center justify-center"
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: 24,
+              backgroundColor: "rgba(0,0,0,0.4)",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
             onPress={() => setCameraActive(false)}
           >
             <Ionicons name="close" size={24} color="white" />
           </Pressable>
 
           <Pressable
-            className="w-20 h-20 rounded-full border-4 border-white items-center justify-center"
+            style={{
+              width: 80,
+              height: 80,
+              borderRadius: 40,
+              borderWidth: 4,
+              borderColor: "white",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
             onPress={handleCapture}
           >
-            <View className="w-16 h-16 rounded-full bg-white" />
+            <View
+              style={{
+                width: 64,
+                height: 64,
+                borderRadius: 32,
+                backgroundColor: "white",
+              }}
+            />
           </Pressable>
 
-          <View className="w-12" />
-        </View>
-
-        {/* Oval guide overlay */}
-        <View className="absolute inset-0 items-center justify-center pointer-events-none">
-          <View className="w-48 h-56 border-4 border-white/30 rounded-full" />
-          <Text className="text-white text-sm mt-8">
-            Position your face within the oval
-          </Text>
+          <View style={{ width: 48 }} />
         </View>
       </SafeAreaView>
     );
   }
 
-  // Preview/selection view
+  // Preview / selection view
   return (
     <SafeAreaView className="flex-1 bg-primary-white">
       <ScreenHeader title="Take a Selfie" showBack />
@@ -117,14 +194,53 @@ export default function SelfieScreen() {
         <Text className="text-text-secondary text-sm mb-4">Step 2 of 4</Text>
 
         {capturedUri ? (
-          <View className="w-full h-72 bg-card-dark rounded-2xl overflow-hidden mb-4">
-            <Text className="absolute z-10 top-2 left-2 text-green-500 font-semibold bg-black/50 px-2 py-1 rounded text-xs">
-              ✓ Captured
-            </Text>
+          // Show the actual captured photo
+          <View
+            style={{
+              width: "100%",
+              height: 288,
+              borderRadius: 16,
+              overflow: "hidden",
+              marginBottom: 16,
+            }}
+          >
+            <Image
+              source={{ uri: capturedUri }}
+              style={{ width: "100%", height: "100%" }}
+              resizeMode="cover"
+            />
+            <View
+              style={{
+                position: "absolute",
+                top: 8,
+                left: 8,
+                backgroundColor: "rgba(0,0,0,0.5)",
+                borderRadius: 8,
+                paddingHorizontal: 8,
+                paddingVertical: 4,
+              }}
+            >
+              <Text
+                style={{ color: "#4CAF50", fontSize: 12, fontWeight: "600" }}
+              >
+                ✓ Selfie captured
+              </Text>
+            </View>
           </View>
         ) : (
+          // Placeholder before capture
           <View className="w-full h-72 bg-card-dark rounded-2xl items-center justify-center mb-4">
-            <View className="w-48 h-56 border-4 border-white rounded-full items-center justify-center">
+            <View
+              style={{
+                width: 192,
+                height: 224,
+                borderRadius: 999,
+                borderWidth: 4,
+                borderColor: "white",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
               <Ionicons name="person" size={80} color={colors.text.muted} />
             </View>
             <Text className="text-text-secondary mt-2">
@@ -133,8 +249,14 @@ export default function SelfieScreen() {
           </View>
         )}
 
+        {/* Tips */}
         <View className="flex-row flex-wrap gap-2 mb-6">
-          {["Good lighting", "Face forward", "No glasses"].map((tip) => (
+          {[
+            "Good lighting",
+            "Face forward",
+            "No glasses",
+            "Plain background",
+          ].map((tip) => (
             <View key={tip} className="bg-card-light rounded-full px-3 py-2">
               <Text className="text-text-secondary text-xs">{tip}</Text>
             </View>
@@ -143,7 +265,7 @@ export default function SelfieScreen() {
 
         {!capturedUri ? (
           <PrimaryButton
-            label="Take Selfie"
+            label="Open Camera"
             fullWidth
             onPress={handleTakeSelfie}
           />
@@ -154,7 +276,7 @@ export default function SelfieScreen() {
               fullWidth
               onPress={handleContinue}
             />
-            <PrimaryButton label="Retake" fullWidth onPress={handleRetake} />
+            <OutlinedButton label="Retake Photo" onPress={handleRetake} />
           </View>
         )}
       </ScrollView>

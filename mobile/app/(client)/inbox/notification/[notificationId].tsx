@@ -30,6 +30,11 @@ export default function NotificationDetailScreen() {
         ? "#4CAF50"
         : "#F59E0B";
 
+  // Extract a booking ID from the notification body if present
+  // e.g. "BK-001 accepted" -> "BK-001"
+  const bookingIdMatch = notification.body.match(/BK-\d+/);
+  const bookingId = bookingIdMatch ? bookingIdMatch[0] : null;
+
   return (
     <SafeAreaView className="flex-1 bg-primary-white">
       <ScreenHeader title="Notification" showBack />
@@ -47,12 +52,12 @@ export default function NotificationDetailScreen() {
           {notification.time}
         </Text>
         <Text className="text-text-secondary mt-4">{notification.body}</Text>
-        {notification.type === "booking" && (
+        {notification.type === "booking" && bookingId && (
           <View className="mt-8">
             <PrimaryButton
               label="View Booking"
               fullWidth
-              onPress={() => router.push("/(client)/booking/BK-001")}
+              onPress={() => router.push(`/(client)/booking/${bookingId}`)}
             />
           </View>
         )}

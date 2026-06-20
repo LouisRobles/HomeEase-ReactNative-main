@@ -1,65 +1,129 @@
 import React from "react";
-import { View, Text, Pressable } from "react-native";
+import { View, Text, Pressable, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import ScreenHeader from "../../../../components/ui/ScreenHeader";
+import { useBookingStore } from "../../../../store/bookingStore";
 import { colors } from "../../../../constants";
 
 export default function TrackBookingScreen() {
   const router = useRouter();
+  const { bookingId } = useLocalSearchParams<{ bookingId: string }>();
+  const booking = useBookingStore((s) =>
+    s.bookings.find((b) => b.id === bookingId),
+  );
+
+  if (!booking) {
+    return (
+      <SafeAreaView className="flex-1 bg-primary-white">
+        <ScreenHeader title="Track Service" showBack />
+        <View className="flex-1 items-center justify-center">
+          <Text className="text-text-secondary">Booking not found</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  const steps = ["Booked", "Accepted", "On the Way", "In Progress", "Done"];
+
+  const currentStepIndex =
+    booking.status === "Pending"
+      ? 0
+      : booking.status === "Active"
+        ? 2
+        : booking.status === "Completed"
+          ? 4
+          : 0;
+
+  const statusLabel =
+    booking.status === "Pending"
+      ? "Waiting for worker to accept"
+      : booking.status === "Active"
+        ? "Worker is on the way"
+        : booking.status === "Completed"
+          ? "Service completed"
+          : "Booking cancelled";
+
+  const statusColor =
+    booking.status === "Completed"
+      ? colors.success
+      : booking.status === "Cancelled"
+        ? colors.error
+        : colors.warning;
 
   return (
     <SafeAreaView className="flex-1 bg-primary-white">
       <ScreenHeader title="Track Service" showBack />
       <View className="px-4 mt-2">
-        <View className="flex-row justify-between mb-4">
-          {["Booked", "Accepted", "On the Way", "In Progress", "Done"].map(
-            (label, i) => (
-              <View key={label} className="items-center">
-                <View
-                  className={`w-8 h-8 rounded-full items-center justify-center ${
-                    i <= 2 ? "bg-accent" : "bg-card-light"
-                  }`}
-                >
+        <View className="flex-row justify-between mb-6">
+          {steps.map((label, i) => (
+            <View key={label} className="items-center flex-1">
+              <View
+                className={`w-8 h-8 rounded-full items-center justify-center ${
+                  i <= currentStepIndex ? "bg-accent" : "bg-card-light"
+                }`}
+              >
+                {i < currentStepIndex ? (
+                  <Ionicons name="checkmark" size={16} color={colors.white} />
+                ) : (
                   <Text
                     className={`text-sm font-bold ${
-                      i <= 2 ? "text-primary" : "text-text-secondary"
+                      i <= currentStepIndex
+                        ? "text-white"
+                        : "text-text-secondary"
                     }`}
                   >
                     {i + 1}
                   </Text>
-                </View>
-                <Text
-                  className={`text-xs mt-1 ${
-                    i === 2 ? "text-accent font-semibold" : "text-text-muted"
-                  }`}
-                >
-                  {label}
-                </Text>
+                )}
               </View>
-            ),
-          )}
+              <Text
+                className={`text-xs mt-1 text-center ${
+                  i === currentStepIndex
+                    ? "text-accent font-semibold"
+                    : "text-text-muted"
+                }`}
+                numberOfLines={2}
+              >
+                {label}
+              </Text>
+            </View>
+          ))}
         </View>
+
         <View className="flex-1 bg-card-dark rounded-2xl items-center justify-center min-h-[200]">
           <Ionicons name="map" size={60} color={colors.accent.DEFAULT} />
           <Text className="text-text-secondary mt-2">Live Tracking</Text>
           <Text className="text-text-muted text-xs mt-1">
-            {/* (Install react-native-maps for live tracking) */}
+            Real-time map available after backend integration
           </Text>
         </View>
-        <View className="bg-warning/20 rounded-full py-2 px-4 self-center mt-4">
-          <Text className="text-warning font-semibold text-sm">
-            Worker is on the way
+
+        <View
+          className="rounded-full py-2 px-4 self-center mt-4"
+          style={{ backgroundColor: `${statusColor}20` }}
+        >
+          <Text
+            className="font-semibold text-sm"
+            style={{ color: statusColor }}
+          >
+            {statusLabel}
           </Text>
         </View>
+
         <View className="bg-card rounded-2xl p-4 mt-6 flex-row items-center">
           <View className="w-12 h-12 bg-card-dark rounded-full items-center justify-center mr-3">
             <Ionicons name="person-circle" size={40} color={colors.white} />
           </View>
           <View className="flex-1">
-            <Text className="text-primary font-bold">Juan Dela Cruz</Text>
-            <Text className="text-warning text-sm">On the way</Text>
+            <Text className="text-primary font-bold">{booking.worker}</Text>
+            <Text
+              className="text-sm font-semibold"
+              style={{ color: statusColor }}
+            >
+              {booking.status}
+            </Text>
           </View>
           <Pressable
             onPress={() => router.push("/(client)/inbox/chat/c1")}
@@ -68,12 +132,7 @@ export default function TrackBookingScreen() {
             <Ionicons name="chatbubble" size={20} color={colors.white} />
           </Pressable>
           <Pressable
-            onPress={() =>
-              require("react-native").Alert.alert(
-                "Calling...",
-                "Feature coming soon",
-              )
-            }
+            onPress={() => Alert.alert("Calling...", "Feature coming soon")}
             className="bg-accent rounded-full p-2"
           >
             <Ionicons name="call" size={20} color={colors.white} />

@@ -1,11 +1,12 @@
 import React from "react";
-import { View, Text } from "react-native";
+import { View, Text, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import ScreenHeader from "../../../../components/ui/ScreenHeader";
 import StatusBadge from "../../../../components/ui/StatusBadge";
 import DangerButton from "../../../../components/ui/DangerButton";
+import OutlinedButton from "../../../../components/ui/OutlinedButton";
 import { colors } from "../../../../constants";
 
 const CERTS: Record<
@@ -50,6 +51,25 @@ export default function CertificationDetailScreen() {
     );
   }
 
+  const handleDelete = () => {
+    Alert.alert(
+      "Delete Certification",
+      `Are you sure you want to remove "${cert.name}"? This cannot be undone.`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () => {
+            Alert.alert("Deleted", `"${cert.name}" has been removed.`, [
+              { text: "OK", onPress: () => router.back() },
+            ]);
+          },
+        },
+      ],
+    );
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-primary-white">
       <ScreenHeader title="Certification Details" showBack />
@@ -61,20 +81,42 @@ export default function CertificationDetailScreen() {
             color={colors.primary.DEFAULT}
           />
           <Text className="text-text-secondary mt-2">Document Preview</Text>
-        </View>
-        <View className="bg-card rounded-2xl p-4 mb-4">
-          <Text className="text-primary font-bold">{cert.name}</Text>
-          <Text className="text-text-secondary text-sm">{cert.issuer}</Text>
-          <Text className="text-text-muted text-xs mt-2">
-            {cert.issueDate} – {cert.expiryDate}
+          <Text className="text-text-muted text-xs mt-1">
+            Full document viewing available after backend integration
           </Text>
-          <StatusBadge status={cert.status as "Verified"} />
         </View>
-        <DangerButton
-          label="Delete Certification"
-          fullWidth
-          onPress={() => router.back()}
-        />
+
+        <View className="bg-card rounded-2xl p-4 mb-4">
+          <Text className="text-primary font-bold text-lg">{cert.name}</Text>
+          <Text className="text-text-secondary text-sm mt-1">
+            {cert.issuer}
+          </Text>
+          <Text className="text-text-muted text-xs mt-2">
+            Issued: {cert.issueDate}
+          </Text>
+          {cert.expiryDate ? (
+            <Text className="text-text-muted text-xs">
+              Expires: {cert.expiryDate}
+            </Text>
+          ) : null}
+          <View className="mt-3">
+            <StatusBadge status={cert.status as "Verified"} />
+          </View>
+        </View>
+
+        <View className="gap-3">
+          <OutlinedButton
+            label="Edit Certification"
+            onPress={() =>
+              router.push("/(worker)/profile/certifications/upload")
+            }
+          />
+          <DangerButton
+            label="Delete Certification"
+            fullWidth
+            onPress={handleDelete}
+          />
+        </View>
       </View>
     </SafeAreaView>
   );

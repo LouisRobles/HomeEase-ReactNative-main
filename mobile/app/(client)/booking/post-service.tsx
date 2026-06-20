@@ -40,7 +40,7 @@ const TIMELINE_EVENTS: TimelineEvent[] = [
 
 export default function PostServiceScreen() {
   const router = useRouter();
-  const { bookingId } = useLocalSearchParams();
+  const { bookingId } = useLocalSearchParams<{ bookingId: string }>();
   const { bookings, submitReview } = useBookingStore();
   const toast = useToastContext();
 
@@ -71,15 +71,12 @@ export default function PostServiceScreen() {
 
     setLoading(true);
     try {
-      // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 800));
-
       submitReview(booking.id, rating, reviewText);
       toast.success("Thank you for your review!");
 
-      // Navigate back after delay
       setTimeout(() => {
-        router.push("/(client)/booking");
+        router.replace("/(client)/booking");
       }, 1500);
     } catch {
       toast.error("Failed to submit review");
@@ -88,17 +85,15 @@ export default function PostServiceScreen() {
     }
   };
 
-  const handleTip = async () => {
-    let finalTip = tipAmount;
-    if (customTip) {
-      finalTip = parseFloat(customTip) || 0;
-    }
+  const handleSkipReview = () => {
+    router.replace("/(client)/booking");
+  };
 
+  const handleTip = () => {
+    const finalTip = customTip ? parseFloat(customTip) || 0 : tipAmount;
     if (finalTip > 0) {
       toast.success(`Tip of ₱${finalTip} added successfully!`);
     }
-
-    // Reset and continue
     setTipAmount(0);
     setCustomTip("");
   };
@@ -133,13 +128,10 @@ export default function PostServiceScreen() {
           {TIMELINE_EVENTS.map((event, index) => (
             <View key={event.status}>
               <View className="flex-row">
-                {/* Timeline dot and line */}
                 <View className="items-center mr-4">
                   <View
                     className={`w-4 h-4 rounded-full ${
-                      event.completed
-                        ? "bg-success"
-                        : "bg-text-muted border-2 border-text-muted"
+                      event.completed ? "bg-success" : "bg-text-muted"
                     }`}
                   />
                   {index < TIMELINE_EVENTS.length - 1 && (
@@ -149,8 +141,6 @@ export default function PostServiceScreen() {
                     />
                   )}
                 </View>
-
-                {/* Event details */}
                 <View className="flex-1 pb-4">
                   <Text className="text-primary font-semibold">
                     {event.label}
@@ -180,7 +170,7 @@ export default function PostServiceScreen() {
                   name={star <= rating ? "star" : "star-outline"}
                   size={32}
                   color={
-                    star <= rating ? (colors.accent as any) : colors.text.muted
+                    star <= rating ? colors.accent.DEFAULT : colors.text.muted
                   }
                 />
               </Pressable>
@@ -210,7 +200,7 @@ export default function PostServiceScreen() {
         <View className="bg-accent/10 rounded-2xl p-4 mb-4">
           <View className="flex-row items-center justify-between mb-3">
             <View className="flex-row items-center gap-2">
-              <Ionicons name="gift" size={20} color={colors.accent as any} />
+              <Ionicons name="gift" size={20} color={colors.accent.DEFAULT} />
               <Text className="text-primary font-bold">Add a Tip</Text>
             </View>
             <Text className="text-text-secondary text-xs">Optional</Text>
@@ -221,7 +211,7 @@ export default function PostServiceScreen() {
               <Pressable
                 key={amount}
                 className={`px-4 py-2 rounded-lg ${
-                  tipAmount === amount ? "bg-accent" : "bg-white"
+                  tipAmount === amount && !customTip ? "bg-accent" : "bg-white"
                 }`}
                 onPress={() => {
                   setTipAmount(amount);
@@ -230,8 +220,8 @@ export default function PostServiceScreen() {
               >
                 <Text
                   className={`font-semibold text-sm ${
-                    tipAmount === amount
-                      ? "text-primary"
+                    tipAmount === amount && !customTip
+                      ? "text-white"
                       : "text-text-secondary"
                   }`}
                 >
@@ -241,35 +231,38 @@ export default function PostServiceScreen() {
             ))}
           </View>
 
-          {/* Custom tip input */}
           <InputField
             label=""
             value={customTip}
-            onChangeText={setCustomTip}
-            placeholder="Enter custom amount"
+            onChangeText={(val) => {
+              setCustomTip(val);
+              setTipAmount(0);
+            }}
+            placeholder="Enter custom tip amount"
             keyboardType="numeric"
           />
 
-          {tipAmount > 0 || customTip ? (
+          {(tipAmount > 0 || customTip) && (
             <Pressable
-              className="border border-accent rounded-xl py-3 items-center justify-center"
+              className="border border-accent rounded-xl py-3 items-center justify-center mt-2"
               onPress={handleTip}
             >
               <Text className="text-accent font-semibold">
-                Add Tip{" "}
-                {tipAmount > 0 || customTip ? `₱${tipAmount || customTip}` : ""}
+                Add Tip ₱{customTip || tipAmount}
               </Text>
             </Pressable>
-          ) : null}
+          )}
         </View>
 
-        {/* Submit Button */}
-        <PrimaryButton
-          label={rating > 0 ? "Submit Review" : "Skip Review"}
-          fullWidth
-          loading={loading}
-          onPress={handleSubmitReview}
-        />
+        {/* Action Buttons */}
+        <View className="gap-3">
+          <PrimaryButton
+            label={rating > 0 ? "Submit Review" : "Skip Review"}
+            fullWidth
+            loading={loading}
+            onPress={rating > 0 ? handleSubmitReview : handleSkipReview}
+          />
+        </View>
       </ScrollView>
     </SafeAreaView>
   );

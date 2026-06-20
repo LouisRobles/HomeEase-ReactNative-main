@@ -127,7 +127,7 @@ export default function BookingStep3Screen() {
               <Text
                 className={
                   tipAmount === amount
-                    ? "text-primary font-semibold text-sm"
+                    ? "text-white font-semibold text-sm"
                     : "text-text-secondary text-sm"
                 }
               >
@@ -146,7 +146,7 @@ export default function BookingStep3Screen() {
             <Text
               className={
                 showCustomTip
-                  ? "text-primary font-semibold text-sm"
+                  ? "text-white font-semibold text-sm"
                   : "text-text-secondary text-sm"
               }
             >

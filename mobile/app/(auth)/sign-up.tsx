@@ -31,7 +31,6 @@ export default function SignUpScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // Error states
   const [nameError, setNameError] = useState("");
   const [emailError, setEmailError] = useState("");
   const [phoneError, setPhoneError] = useState("");
@@ -44,7 +43,6 @@ export default function SignUpScreen() {
   const passwordRef = useRef<TextInput>(null);
   const confirmPasswordRef = useRef<TextInput>(null);
 
-  // Real-time validation handlers
   const handleNameChange = (text: string) => {
     setFullName(text);
     if (text.trim()) {
@@ -96,7 +94,6 @@ export default function SignUpScreen() {
   };
 
   const handleSignUp = async () => {
-    // Validate all fields
     const nameValidation = validateName(fullName);
     const emailValidation = validateEmail(email);
     const phoneValidation = validatePhone(phone);
@@ -106,14 +103,12 @@ export default function SignUpScreen() {
       confirmPassword,
     );
 
-    // Set errors
     setNameError(nameValidation.error || "");
     setEmailError(emailValidation.error || "");
     setPhoneError(phoneValidation.error || "");
     setPasswordError(passwordValidation.error || "");
     setConfirmPasswordError(confirmPasswordValidation.error || "");
 
-    // Check if all valid
     if (
       !nameValidation.valid ||
       !emailValidation.valid ||
@@ -142,7 +137,6 @@ export default function SignUpScreen() {
 
       toast.success("Account created successfully");
 
-      // Workers go to KYC flow, clients go to OTP verification
       if (role === "worker") {
         router.push({ pathname: "/(kyc)/landing", params: { role } });
       } else {
@@ -187,12 +181,12 @@ export default function SignUpScreen() {
             onSubmitEditing={() => emailRef.current?.focus()}
             editable={!loading}
           />
-          {nameError && (
+          {nameError ? (
             <View className="flex-row items-center gap-1 mt-1 mb-2">
               <Ionicons name="alert-circle" size={14} color="#EF4444" />
               <Text className="text-error text-xs">{nameError}</Text>
             </View>
-          )}
+          ) : null}
         </View>
 
         {/* Email */}
@@ -209,12 +203,12 @@ export default function SignUpScreen() {
             onSubmitEditing={() => phoneRef.current?.focus()}
             editable={!loading}
           />
-          {emailError && (
+          {emailError ? (
             <View className="flex-row items-center gap-1 mt-1 mb-2">
               <Ionicons name="alert-circle" size={14} color="#EF4444" />
               <Text className="text-error text-xs">{emailError}</Text>
             </View>
-          )}
+          ) : null}
         </View>
 
         {/* Phone */}
@@ -230,12 +224,12 @@ export default function SignUpScreen() {
             onSubmitEditing={() => passwordRef.current?.focus()}
             editable={!loading}
           />
-          {phoneError && (
+          {phoneError ? (
             <View className="flex-row items-center gap-1 mt-1 mb-2">
               <Ionicons name="alert-circle" size={14} color="#EF4444" />
               <Text className="text-error text-xs">{phoneError}</Text>
             </View>
-          )}
+          ) : null}
         </View>
 
         {/* Password */}
@@ -251,12 +245,12 @@ export default function SignUpScreen() {
             onSubmitEditing={() => confirmPasswordRef.current?.focus()}
             editable={!loading}
           />
-          {passwordError && (
+          {passwordError ? (
             <View className="flex-row items-center gap-1 mt-1 mb-2">
               <Ionicons name="alert-circle" size={14} color="#EF4444" />
               <Text className="text-error text-xs">{passwordError}</Text>
             </View>
-          )}
+          ) : null}
           <Pressable
             className="absolute right-3 top-10"
             onPress={() => setShowPassword(!showPassword)}
@@ -283,12 +277,12 @@ export default function SignUpScreen() {
             onSubmitEditing={handleSignUp}
             editable={!loading}
           />
-          {confirmPasswordError && (
+          {confirmPasswordError ? (
             <View className="flex-row items-center gap-1 mt-1 mb-2">
               <Ionicons name="alert-circle" size={14} color="#EF4444" />
               <Text className="text-error text-xs">{confirmPasswordError}</Text>
             </View>
-          )}
+          ) : null}
           <Pressable
             className="absolute right-3 top-10"
             onPress={() => setShowConfirmPassword(!showConfirmPassword)}
@@ -321,7 +315,7 @@ export default function SignUpScreen() {
             I agree to the{" "}
             <Text
               className="text-accent underline"
-              onPress={() => router.push("/terms-conditions")}
+              onPress={() => router.push("/(auth)/terms-conditions")}
             >
               Terms and Conditions
             </Text>

@@ -1,7 +1,11 @@
 import { create } from "zustand";
 import { jobRequests as dummyJobRequests } from "../constants/dummyData";
 
-export type JobRequestStatus = "Pending" | "Accepted" | "Completed" | "Declined";
+export type JobRequestStatus =
+  | "Pending"
+  | "Accepted"
+  | "Completed"
+  | "Declined";
 
 export type JobRequest = {
   id: string;
@@ -36,4 +40,3 @@ export const useWorkerStore = create<WorkerState>((set) => ({
       ),
     })),
 }));
-

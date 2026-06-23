@@ -1,9 +1,28 @@
 import { Request, Response } from 'express';
 import prisma from '@config/database';
 import { hashPassword, comparePassword } from '@utils/passwordHash';
-import { generateToken } from '@utils/jwt';
-import { validateEmail, validatePassword, validatePhone } from '@utils/validators';
+import { generateToken, verifyToken } from '@utils/jwt';
+import { validateEmail, validatePassword, validatePhone, validateOtp } from '@utils/validators';
 import { errorResponse } from '@utils/errorResponse';
+import {
+  sendOtpEmail,
+  sendPasswordResetEmail,
+  sendWelcomeEmail,
+} from '@utils/emailService';
+import {
+  generateOtp,
+  generateResetToken,
+  storeOtp,
+  verifyOtp,
+  storePasswordResetToken,
+  verifyPasswordResetToken,
+  storeRefreshToken,
+  verifyRefreshToken,
+  revokeRefreshToken,
+  revokeAllRefreshTokens,
+} from '@utils/otpService';
+import { TokenType } from '@prisma/client';
+import crypto from 'crypto';
 
 type SignupRole = 'CLIENT' | 'WORKER';
 
@@ -21,13 +40,13 @@ const normalizeEmail = (value: unknown): string => {
 
 const normalizeSignupRole = (value: unknown): SignupRole | null => {
   const role = getTrimmedString(value).toUpperCase();
-
-  if (role === 'CLIENT' || role === 'WORKER') {
-    return role;
-  }
-
+  if (role === 'CLIENT' || role === 'WORKER') return role;
   return null;
 };
+
+// ============================================================================
+// SIGNUP
+// ============================================================================
 
 export const signup = async (req: Request, res: Response) => {
   try {
@@ -37,15 +56,12 @@ export const signup = async (req: Request, res: Response) => {
     const password = getPasswordString(req.body.password);
     const role = normalizeSignupRole(req.body.role);
 
-    // Validation
     if (!fullName || !email || !phone || !password || !req.body.role) {
       return res.status(400).json(errorResponse(400, 'Missing required fields'));
     }
 
     if (!role) {
-      return res
-        .status(400)
-        .json(errorResponse(400, 'Role must be either CLIENT or WORKER'));
+      return res.status(400).json(errorResponse(400, 'Role must be either CLIENT or WORKER'));
     }
 
     if (!validateEmail(email)) {
@@ -54,10 +70,7 @@ export const signup = async (req: Request, res: Response) => {
 
     if (!validatePassword(password)) {
       return res.status(400).json(
-        errorResponse(
-          400,
-          'Password must be at least 8 characters with 1 uppercase letter and 1 number'
-        )
+        errorResponse(400, 'Password must be at least 8 characters with 1 uppercase letter and 1 number')
       );
     }
 
@@ -65,64 +78,49 @@ export const signup = async (req: Request, res: Response) => {
       return res.status(400).json(errorResponse(400, 'Invalid phone number'));
     }
 
-    // Check if email exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
-    });
+    const existingUser = await prisma.user.findUnique({ where: { email } });
 
     if (existingUser) {
       return res.status(409).json(errorResponse(409, 'Email already registered'));
     }
 
-    // Hash password
     const hashedPassword = await hashPassword(password);
 
     const user = await prisma.$transaction(async (tx) => {
       const createdUser = await tx.user.create({
-        data: {
-          fullName,
-          email,
-          phone,
-          password: hashedPassword,
-          role,
-        },
+        data: { fullName, email, phone, password: hashedPassword, role },
       });
 
       if (role === 'WORKER') {
-        await tx.workerProfile.create({
-          data: {
-            userId: createdUser.id,
-          },
-        });
+        await tx.workerProfile.create({ data: { userId: createdUser.id } });
       } else {
-        await tx.clientProfile.create({
-          data: {
-            userId: createdUser.id,
-          },
-        });
+        await tx.clientProfile.create({ data: { userId: createdUser.id } });
       }
 
       return createdUser;
     });
 
-    // Generate token
-    const token = generateToken({
-      userId: user.id,
-      email: user.email,
-      role: user.role,
-    });
+    // Generate and send OTP
+    const otp = generateOtp();
+    await storeOtp(user.id, otp);
+    await sendOtpEmail(email, otp);
 
-    // FIXED: Added return keyword here
+    const token = generateToken({ userId: user.id, email: user.email, role: user.role });
+    const refreshToken = crypto.randomBytes(40).toString('hex');
+    await storeRefreshToken(user.id, refreshToken);
+
     return res.status(201).json({
       success: true,
-      message: 'Account created successfully',
+      message: 'Account created successfully. Please verify your email.',
       data: {
         id: user.id,
         name: user.fullName,
         email: user.email,
         phone: user.phone,
         role: user.role,
+        isVerified: user.isVerified,
         token,
+        refreshToken,
       },
     });
   } catch (error) {
@@ -130,6 +128,10 @@ export const signup = async (req: Request, res: Response) => {
     return res.status(500).json(errorResponse(500, 'Internal server error'));
   }
 };
+
+// ============================================================================
+// LOGIN
+// ============================================================================
 
 export const login = async (req: Request, res: Response) => {
   try {
@@ -140,9 +142,7 @@ export const login = async (req: Request, res: Response) => {
       return res.status(400).json(errorResponse(400, 'Email and password required'));
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email },
-    });
+    const user = await prisma.user.findUnique({ where: { email } });
 
     if (!user) {
       return res.status(401).json(errorResponse(401, 'Invalid credentials'));
@@ -154,13 +154,10 @@ export const login = async (req: Request, res: Response) => {
       return res.status(401).json(errorResponse(401, 'Invalid credentials'));
     }
 
-    const token = generateToken({
-      userId: user.id,
-      email: user.email,
-      role: user.role,
-    });
+    const token = generateToken({ userId: user.id, email: user.email, role: user.role });
+    const refreshToken = crypto.randomBytes(40).toString('hex');
+    await storeRefreshToken(user.id, refreshToken);
 
-    // FIXED: Added return keyword here
     return res.json({
       success: true,
       message: 'Login successful',
@@ -170,7 +167,9 @@ export const login = async (req: Request, res: Response) => {
         email: user.email,
         phone: user.phone,
         role: user.role,
+        isVerified: user.isVerified,
         token,
+        refreshToken,
       },
     });
   } catch (error) {
@@ -179,7 +178,11 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
-export const sendPasswordResetEmail = async (req: Request, res: Response) => {
+// ============================================================================
+// OTP
+// ============================================================================
+
+export const sendOtp = async (req: Request, res: Response) => {
   try {
     const email = normalizeEmail(req.body.email);
 
@@ -187,28 +190,137 @@ export const sendPasswordResetEmail = async (req: Request, res: Response) => {
       return res.status(400).json(errorResponse(400, 'Invalid email'));
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email },
-    });
+    const user = await prisma.user.findUnique({ where: { email } });
 
     if (!user) {
-      // Return success anyway for security
+      return res.status(404).json(errorResponse(404, 'User not found'));
+    }
+
+    if (user.isVerified) {
+      return res.status(400).json(errorResponse(400, 'Email already verified'));
+    }
+
+    const otp = generateOtp();
+    await storeOtp(user.id, otp);
+    await sendOtpEmail(email, otp);
+
+    return res.json({ success: true, message: 'OTP sent to your email' });
+  } catch (error) {
+    console.error('Send OTP error:', error);
+    return res.status(500).json(errorResponse(500, 'Internal server error'));
+  }
+};
+
+export const verifyOtpHandler = async (req: Request, res: Response) => {
+  try {
+    const email = normalizeEmail(req.body.email);
+    const otp = getTrimmedString(req.body.otp);
+
+    if (!validateEmail(email)) {
+      return res.status(400).json(errorResponse(400, 'Invalid email'));
+    }
+
+    if (!validateOtp(otp)) {
+      return res.status(400).json(errorResponse(400, 'OTP must be 6 digits'));
+    }
+
+    const user = await prisma.user.findUnique({ where: { email } });
+
+    if (!user) {
+      return res.status(404).json(errorResponse(404, 'User not found'));
+    }
+
+    if (user.isVerified) {
+      return res.status(400).json(errorResponse(400, 'Email already verified'));
+    }
+
+    const isValid = await verifyOtp(user.id, otp);
+
+    if (!isValid) {
+      return res.status(400).json(errorResponse(400, 'Invalid or expired OTP'));
+    }
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { isVerified: true },
+    });
+
+    await sendWelcomeEmail(email, user.fullName);
+
+    const token = generateToken({ userId: user.id, email: user.email, role: user.role });
+
+    return res.json({
+      success: true,
+      message: 'Email verified successfully',
+      data: { token },
+    });
+  } catch (error) {
+    console.error('Verify OTP error:', error);
+    return res.status(500).json(errorResponse(500, 'Internal server error'));
+  }
+};
+
+export const resendOtp = async (req: Request, res: Response) => {
+  try {
+    const email = normalizeEmail(req.body.email);
+
+    if (!validateEmail(email)) {
+      return res.status(400).json(errorResponse(400, 'Invalid email'));
+    }
+
+    const user = await prisma.user.findUnique({ where: { email } });
+
+    if (!user) {
+      return res.status(404).json(errorResponse(404, 'User not found'));
+    }
+
+    if (user.isVerified) {
+      return res.status(400).json(errorResponse(400, 'Email already verified'));
+    }
+
+    const otp = generateOtp();
+    await storeOtp(user.id, otp);
+    await sendOtpEmail(email, otp);
+
+    return res.json({ success: true, message: 'OTP resent to your email' });
+  } catch (error) {
+    console.error('Resend OTP error:', error);
+    return res.status(500).json(errorResponse(500, 'Internal server error'));
+  }
+};
+
+// ============================================================================
+// PASSWORD RESET
+// ============================================================================
+
+export const forgotPassword = async (req: Request, res: Response) => {
+  try {
+    const email = normalizeEmail(req.body.email);
+
+    if (!validateEmail(email)) {
+      return res.status(400).json(errorResponse(400, 'Invalid email'));
+    }
+
+    const user = await prisma.user.findUnique({ where: { email } });
+
+    // Always return success for security — do not reveal if email exists
+    if (!user) {
       return res.json({
         success: true,
-        message: 'If email exists, password reset link sent',
+        message: 'If that email is registered, a reset link has been sent',
       });
     }
 
-    // TODO: Send actual email with reset token
-    // For now, just return success
+    const token = generateResetToken();
+    await storePasswordResetToken(user.id, token);
+    await sendPasswordResetEmail(email, token);
 
-    // FIXED: Added return keyword here
     return res.json({
       success: true,
-      message: 'Password reset email sent',
+      message: 'If that email is registered, a reset link has been sent',
     });
   } catch (error) {
-    console.error('Password reset error:', error);
+    console.error('Forgot password error:', error);
     return res.status(500).json(errorResponse(500, 'Internal server error'));
   }
 };
@@ -216,27 +328,33 @@ export const sendPasswordResetEmail = async (req: Request, res: Response) => {
 export const resetPassword = async (req: Request, res: Response) => {
   try {
     const email = normalizeEmail(req.body.email);
+    const token = getTrimmedString(req.body.token);
     const newPassword = getPasswordString(req.body.newPassword);
 
     if (!validateEmail(email)) {
       return res.status(400).json(errorResponse(400, 'Invalid email'));
     }
 
+    if (!token) {
+      return res.status(400).json(errorResponse(400, 'Reset token is required'));
+    }
+
     if (!validatePassword(newPassword)) {
       return res.status(400).json(
-        errorResponse(
-          400,
-          'Password must be at least 8 characters with 1 uppercase letter and 1 number'
-        )
+        errorResponse(400, 'Password must be at least 8 characters with 1 uppercase letter and 1 number')
       );
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email },
-    });
+    const user = await prisma.user.findUnique({ where: { email } });
 
     if (!user) {
-      return res.status(404).json(errorResponse(404, 'User not found'));
+      return res.status(400).json(errorResponse(400, 'Invalid or expired reset token'));
+    }
+
+    const isValid = await verifyPasswordResetToken(user.id, token);
+
+    if (!isValid) {
+      return res.status(400).json(errorResponse(400, 'Invalid or expired reset token'));
     }
 
     const hashedPassword = await hashPassword(newPassword);
@@ -246,13 +364,83 @@ export const resetPassword = async (req: Request, res: Response) => {
       data: { password: hashedPassword },
     });
 
-    // FIXED: Added return keyword here
+    // Revoke all refresh tokens on password reset for security
+    await revokeAllRefreshTokens(user.id);
+
+    return res.json({ success: true, message: 'Password reset successfully' });
+  } catch (error) {
+    console.error('Reset password error:', error);
+    return res.status(500).json(errorResponse(500, 'Internal server error'));
+  }
+};
+
+// ============================================================================
+// REFRESH TOKEN
+// ============================================================================
+
+export const refreshToken = async (req: Request, res: Response) => {
+  try {
+    const token = getTrimmedString(req.body.refreshToken);
+
+    if (!token) {
+      return res.status(400).json(errorResponse(400, 'Refresh token required'));
+    }
+
+    const userId = await verifyRefreshToken(token);
+
+    if (!userId) {
+      return res.status(401).json(errorResponse(401, 'Invalid or expired refresh token'));
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+
+    if (!user) {
+      return res.status(401).json(errorResponse(401, 'User not found'));
+    }
+
+    // Rotate refresh token
+    await revokeRefreshToken(token);
+    const newRefreshToken = crypto.randomBytes(40).toString('hex');
+    await storeRefreshToken(user.id, newRefreshToken);
+
+    const newToken = generateToken({ userId: user.id, email: user.email, role: user.role });
+
     return res.json({
       success: true,
-      message: 'Password reset successfully',
+      message: 'Token refreshed',
+      data: {
+        token: newToken,
+        refreshToken: newRefreshToken,
+      },
     });
   } catch (error) {
-    console.error('Password reset error:', error);
+    console.error('Refresh token error:', error);
+    return res.status(500).json(errorResponse(500, 'Internal server error'));
+  }
+};
+
+// ============================================================================
+// LOGOUT
+// ============================================================================
+
+export const logout = async (req: Request, res: Response) => {
+  try {
+    const token = getTrimmedString(req.body.refreshToken);
+    const userId = req.user?.userId;
+
+    if (!userId) {
+      return res.status(401).json(errorResponse(401, 'Unauthorized'));
+    }
+
+    if (token) {
+      await revokeRefreshToken(token);
+    } else {
+      await revokeAllRefreshTokens(userId);
+    }
+
+    return res.json({ success: true, message: 'Logged out successfully' });
+  } catch (error) {
+    console.error('Logout error:', error);
     return res.status(500).json(errorResponse(500, 'Internal server error'));
   }
 };

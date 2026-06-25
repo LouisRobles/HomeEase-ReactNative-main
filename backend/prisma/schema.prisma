@@ -96,8 +96,12 @@ enum NotificationType {
   BOOKING_REQUEST
   BOOKING_ACCEPTED
   BOOKING_REJECTED
+  BOOKING_CANCELLED
+  BOOKING_RESCHEDULED
   BOOKING_COMPLETED
   PAYMENT_RECEIVED
+  PAYMENT_REFUNDED
+  ADDON_ADDED
   REVIEW_RECEIVED
   MESSAGE_RECEIVED
   VERIFICATION_EMAIL
@@ -120,25 +124,53 @@ model User {
   role       Role
   isVerified Boolean @default(false)
   avatar     String?
+  notificationPreferences Json?
+
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Relations
-  clientProfile    ClientProfile?
-  workerProfile    WorkerProfile?
-  sentMessages     Message[]           @relation("sender")
-  receivedMessages Message[]           @relation("receiver")
-  bookingsAsClient Booking[]           @relation("client")
-  bookingsAsWorker Booking[]           @relation("worker")
-  reviews          Review[]
-  notifications    Notification[]
-  authTokens       AuthToken[]
-  kycDocuments     KycDocument[]
+  clientProfile       ClientProfile?
+  workerProfile       WorkerProfile?
+  addresses           UserAddress[]
+  sentMessages        Message[]           @relation("sender")
+  receivedMessages    Message[]           @relation("receiver")
+  bookingsAsClient    Booking[]           @relation("client")
+  bookingsAsWorker    Booking[]           @relation("worker")
+  reviews             Review[]
+  notifications       Notification[]
+  authTokens          AuthToken[]
+  kycDocuments        KycDocument[]
   contractAcceptances ContractAcceptance[]
 
   @@index([email])
   @@index([role])
+  @@index([isDeleted])
+}
+
+model UserAddress {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  label     String?
+  street    String
+  city      String
+  state     String?
+  zipCode   String?
+  isDefault Boolean @default(false)
+
+  // Soft delete
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([userId, isDefault])
 }
 
 model AuthToken {

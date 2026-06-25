@@ -3,7 +3,8 @@
  */
 export const config = {
   // ===== API CONFIGURATION =====
-  API_URL: process.env.EXPO_PUBLIC_API_URL ?? 'https://api.homeease.com',
+  // API_URL: process.env.EXPO_PUBLIC_API_URL ?? 'https://api.homeease.com',
+  API_URL: process.env.EXPO_PUBLIC_API_URL ?? 'http://10.0.2.2:3000', // Localhost for Android emulator
   API_TIMEOUT_MS: 8000,
 
   // ===== APP VERSION =====

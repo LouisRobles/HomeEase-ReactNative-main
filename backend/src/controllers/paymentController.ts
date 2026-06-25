@@ -1,0 +1,466 @@
+import { Request, Response } from 'express';
+import prisma from '@config/database';
+import { errorResponse } from '@utils/errorResponse';
+import type { JwtPayload } from '@/types/index';
+import { getPriceBreakdown, calculateCommission, calculateWithholdingTax } from '../utils/pricing';
+
+interface AuthRequest extends Request {
+  user?: JwtPayload;
+}
+
+/**
+ * POST /api/payments/:bookingId
+ * Create Payment once booking is completed/approved
+ *
+ * Schema notes:
+ *  - Payment has no clientId/workerId — ownership is accessed via booking relation
+ *  - Payment.methodType is required (PaymentMethodType enum); default to CASH until PayMongo is wired
+ *  - totalAmount is required on Payment
+ *  - Booking quote data is inline (laborCost, materialsCost); addOns use `price` field
+ */
+export const createPayment = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json(errorResponse(401, 'Not authenticated'));
+    }
+
+    const bookingId = req.params.bookingId as string;
+    const currentUserId = req.user.userId;
+
+    const booking = await prisma.booking.findUnique({
+      where: { id: bookingId },
+      include: {
+        addOns: true,   // schema: addOns (capital O), fields: name + price
+        client: true,
+        worker: true,
+      },
+    });
+
+    if (!booking) {
+      return res.status(404).json(errorResponse(404, 'Booking not found'));
+    }
+
+    // Only client can create payment for their booking
+    if (booking.clientId !== currentUserId) {
+      return res.status(403).json(errorResponse(403, 'You do not have permission to create payment for this booking'));
+    }
+
+    // Can only create payment for completed or approved bookings
+    if (!['COMPLETED', 'QUOTE_APPROVED'].includes(booking.status)) {
+      return res.status(409).json(errorResponse(409, `Cannot create payment for booking with status ${booking.status}`));
+    }
+
+    // Check if payment already exists (bookingId is @unique on Payment)
+    const existingPayment = await prisma.payment.findUnique({
+      where: { bookingId },
+    });
+
+    if (existingPayment) {
+      return res.status(409).json(errorResponse(409, 'Payment already exists for this booking'));
+    }
+
+    // Calculate amounts using inline quote fields and addOns
+    const addonsCost = (booking.addOns || []).reduce((sum: number, addon: { price: number }) => sum + addon.price, 0);
+    const hasQuote = booking.laborCost != null && booking.materialsCost != null;
+    const subtotal = hasQuote
+      ? (booking.laborCost ?? 0) + (booking.materialsCost ?? 0) + addonsCost
+      : booking.estimatedPrice + addonsCost;
+
+    const commission = calculateCommission(subtotal);
+    const withholdingTax = calculateWithholdingTax(subtotal);
+    const workerPayout = subtotal - commission - withholdingTax;
+    const totalAmount = subtotal; // client pays subtotal; commission/tax deducted from worker payout
+
+    const payment = await prisma.payment.create({
+      data: {
+        bookingId,
+        subtotal,
+        commissionAmount: commission,
+        withholdingTaxAmount: withholdingTax,
+        workerPayout,
+        totalAmount,
+        status: 'PENDING',
+        escrowStatus: 'HELD',
+        methodType: 'CASH', // default until PayMongo is integrated in Sprint 3
+      },
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: 'Payment created successfully',
+      data: payment,
+    });
+  } catch (error) {
+    console.error('Error creating payment:', error);
+    return res.status(500).json(errorResponse(500, 'Failed to create payment'));
+  }
+};
+
+/**
+ * GET /api/payments/:bookingId
+ * Get payment detail/receipt data
+ */
+export const getPaymentDetail = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json(errorResponse(401, 'Not authenticated'));
+    }
+
+    const bookingId = req.params.bookingId as string;
+    const currentUserId = req.user.userId;
+
+    // Payment.bookingId is @unique so findUnique is correct
+    const payment = await prisma.payment.findUnique({
+      where: { bookingId },
+      include: {
+        booking: {
+          include: {
+            addOns: true,
+            client: true,
+            worker: true,
+            serviceTask: true,
+          },
+        },
+      },
+    });
+
+    if (!payment) {
+      return res.status(404).json(errorResponse(404, 'Payment not found'));
+    }
+
+    // Ownership check via booking (Payment has no clientId/workerId directly)
+    if (
+      payment.booking.clientId !== currentUserId &&
+      payment.booking.workerId !== currentUserId
+    ) {
+      return res.status(403).json(errorResponse(403, 'You do not have permission to view this payment'));
+    }
+
+    const breakdown = getPriceBreakdown(payment.subtotal, 0, 0);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Payment details retrieved successfully',
+      data: {
+        id: payment.id,
+        bookingId: payment.bookingId,
+        clientName: payment.booking.client.fullName,
+        workerName: payment.booking.worker.fullName,
+        serviceName: payment.booking.serviceTask?.name ?? payment.booking.serviceType,
+        status: payment.status,
+        escrowStatus: payment.escrowStatus,
+        priceBreakdown: breakdown,
+        createdAt: payment.createdAt,
+        updatedAt: payment.updatedAt,
+        // schema has no receivedAt; use createdAt as proxy
+        receivedAt: payment.createdAt,
+        releasedAt: payment.releasedAt,
+        // schema has paymongoPaymentId, not paymentMethodReference
+        transactionId: payment.paymongoPaymentId ?? null,
+      },
+    });
+  } catch (error) {
+    console.error('Error fetching payment detail:', error);
+    return res.status(500).json(errorResponse(500, 'Failed to fetch payment details'));
+  }
+};
+
+/**
+ * GET /api/payments/me
+ * List payments (client: payments made, worker: payouts)
+ *
+ * Payment has no clientId/workerId — filter via booking relation.
+ */
+export const listMyPayments = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json(errorResponse(401, 'Not authenticated'));
+    }
+
+    const { status, page = '1', limit = '10' } = req.query;
+    const currentUserId = req.user.userId;
+    const currentRole = req.user.role;
+
+    const pageNum = Math.max(1, parseInt(page as string) || 1);
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit as string) || 10));
+    const skip = (pageNum - 1) * limitNum;
+
+    // Filter through booking since Payment has no direct clientId/workerId
+    const bookingFilter =
+      currentRole === 'CLIENT'
+        ? { clientId: currentUserId }
+        : { workerId: currentUserId };
+
+    const whereClause: any = {
+      booking: bookingFilter,
+    };
+
+    if (status && typeof status === 'string') {
+      whereClause.status = status;
+    }
+
+    const [payments, total] = await Promise.all([
+      prisma.payment.findMany({
+        where: whereClause,
+        include: {
+          booking: {
+            include: {
+              client: { select: { fullName: true } },
+              worker: { select: { fullName: true } },
+              serviceTask: { select: { name: true } },
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limitNum,
+      }),
+      prisma.payment.count({ where: whereClause }),
+    ]);
+
+    const formattedPayments = payments.map((p) => ({
+      id: p.id,
+      bookingId: p.bookingId,
+      service: p.booking.serviceTask?.name ?? p.booking.serviceType,
+      otherParty:
+        currentRole === 'CLIENT'
+          ? p.booking.worker.fullName
+          : p.booking.client.fullName,
+      amount: currentRole === 'CLIENT' ? p.subtotal : p.workerPayout,
+      status: p.status,
+      escrowStatus: p.escrowStatus,
+      createdAt: p.createdAt,
+    }));
+
+    return res.status(200).json({
+      success: true,
+      message: 'Payments retrieved successfully',
+      data: {
+        payments: formattedPayments,
+        summary: {
+          total,
+          totalAmount: payments.reduce(
+            (sum, p) => sum + (currentRole === 'CLIENT' ? p.subtotal : p.workerPayout),
+            0
+          ),
+          pendingCount: payments.filter((p) => p.status === 'PENDING').length,
+          completedCount: payments.filter((p) => p.status === 'COMPLETED').length,
+        },
+        pagination: {
+          page: pageNum,
+          limit: limitNum,
+          total,
+          pages: Math.ceil(total / limitNum),
+        },
+      },
+    });
+  } catch (error) {
+    console.error('Error listing payments:', error);
+    return res.status(500).json(errorResponse(500, 'Failed to list payments'));
+  }
+};
+
+/**
+ * POST /api/payments/:id/release
+ * Release escrow: HELD → RELEASED
+ */
+export const releaseEscrow = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user || req.user.role !== 'CLIENT') {
+      return res.status(403).json(errorResponse(403, 'Only clients can release escrow'));
+    }
+
+    const id = req.params.id as string;
+    const currentUserId = req.user.userId;
+
+    const payment = await prisma.payment.findUnique({
+      where: { id },
+      include: { booking: true },
+    });
+
+    if (!payment) {
+      return res.status(404).json(errorResponse(404, 'Payment not found'));
+    }
+
+    // Ownership via booking (Payment has no clientId)
+    if (payment.booking.clientId !== currentUserId) {
+      return res.status(403).json(errorResponse(403, 'You do not have permission to release this payment'));
+    }
+
+    if (payment.escrowStatus !== 'HELD') {
+      return res.status(409).json(errorResponse(409, `Cannot release escrow with status ${payment.escrowStatus}`));
+    }
+
+    const updated = await prisma.payment.update({
+      where: { id },
+      data: {
+        escrowStatus: 'RELEASED',
+        releasedAt: new Date(),
+        status: 'COMPLETED',
+      },
+    });
+
+    // Notify worker — schema has PAYMENT_RECEIVED (no PAYMENT_RELEASED)
+    await prisma.notification.create({
+      data: {
+        userId: payment.booking.workerId,
+        type: 'PAYMENT_RECEIVED',
+        title: 'Payment Released',
+        message: `₱${payment.workerPayout} has been released to your account`,
+        relatedId: payment.bookingId,
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Escrow released successfully',
+      data: {
+        id: updated.id,
+        escrowStatus: updated.escrowStatus,
+        releasedAt: updated.releasedAt,
+        workerPayout: updated.workerPayout,
+      },
+    });
+  } catch (error) {
+    console.error('Error releasing escrow:', error);
+    return res.status(500).json(errorResponse(500, 'Failed to release escrow'));
+  }
+};
+
+/**
+ * POST /api/payments/:id/refund
+ * Refund payment: escrow → REFUNDED
+ *
+ * Schema notes:
+ *  - Payment has no refundReason or refundedAt fields
+ *  - Store reason in a notification; use updatedAt as timestamp proxy
+ */
+export const refundPayment = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user || req.user.role !== 'CLIENT') {
+      return res.status(403).json(errorResponse(403, 'Only clients can request refunds'));
+    }
+
+    const id = req.params.id as string;
+    const currentUserId = req.user.userId;
+    const { reason } = req.body;
+
+    const payment = await prisma.payment.findUnique({
+      where: { id },
+      include: { booking: true },
+    });
+
+    if (!payment) {
+      return res.status(404).json(errorResponse(404, 'Payment not found'));
+    }
+
+    // Ownership via booking
+    if (payment.booking.clientId !== currentUserId) {
+      return res.status(403).json(errorResponse(403, 'You do not have permission to refund this payment'));
+    }
+
+    if (payment.escrowStatus !== 'HELD') {
+      return res.status(409).json(errorResponse(409, `Cannot refund escrow with status ${payment.escrowStatus}`));
+    }
+
+    // schema has no refundReason / refundedAt on Payment
+    const updated = await prisma.payment.update({
+      where: { id },
+      data: {
+        escrowStatus: 'REFUNDED',
+        status: 'REFUNDED',
+      },
+    });
+
+    // Notify worker — schema has no PAYMENT_REFUNDED; use PAYMENT_RECEIVED as closest
+    await prisma.notification.create({
+      data: {
+        userId: payment.booking.workerId,
+        type: 'PAYMENT_REFUNDED',
+        title: 'Payment Refunded',
+        message: `Payment has been refunded: ${reason}`,
+        relatedId: payment.bookingId,
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Payment refunded successfully',
+      data: {
+        id: updated.id,
+        escrowStatus: updated.escrowStatus,
+        status: updated.status,
+        refundedAt: updated.updatedAt, // proxy — schema has no refundedAt
+        refundAmount: updated.subtotal,
+      },
+    });
+  } catch (error) {
+    console.error('Error refunding payment:', error);
+    return res.status(500).json(errorResponse(500, 'Failed to refund payment'));
+  }
+};
+
+/**
+ * POST /api/payments/paymongo/intent
+ * Create PayMongo payment intent
+ * STUB for Sprint 3: will integrate with actual PayMongo API
+ */
+export const createPaymentIntent = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user || req.user.role !== 'CLIENT') {
+      return res.status(403).json(errorResponse(403, 'Only clients can create payments'));
+    }
+
+    const { bookingId, amount } = req.body;
+
+    if (!bookingId || typeof bookingId !== 'string') {
+      return res.status(400).json(errorResponse(400, 'bookingId is required'));
+    }
+
+    if (typeof amount !== 'number' || amount <= 0) {
+      return res.status(400).json(errorResponse(400, 'amount must be a positive number'));
+    }
+
+    // TODO: Integrate with PayMongo API
+    return res.status(200).json({
+      success: true,
+      message: 'Payment intent created (STUB)',
+      data: {
+        clientSecret: `pi_${Date.now()}_stub`,
+        publishableKey: process.env.PAYMONGO_PUBLIC_KEY || 'pk_test_stub',
+        amount,
+        currency: 'PHP',
+        description: `Payment for booking ${bookingId}`,
+      },
+    });
+  } catch (error) {
+    console.error('Error creating payment intent:', error);
+    return res.status(500).json(errorResponse(500, 'Failed to create payment intent'));
+  }
+};
+
+/**
+ * POST /api/payments/paymongo/webhook
+ * Handle PayMongo webhook events
+ * STUB for Sprint 3
+ */
+export const handlePayMongoWebhook = async (req: Request, res: Response) => {
+  try {
+    const { type } = req.body; // `data` destructured but unused — removed to fix 6133
+
+    // TODO: Validate webhook signature from PayMongo
+    // TODO: Handle payment.succeeded, payment.failed events
+    console.log('PayMongo webhook received (STUB):', type);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Webhook received (STUB)',
+    });
+  } catch (error) {
+    console.error('Error handling webhook:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to handle webhook',
+    });
+  }
+};

@@ -1,0 +1,75 @@
+import { Router } from 'express';
+import {
+  getUserProfile,
+  updateUserProfile,
+  changePassword,
+  getAddresses,
+  createAddress,
+  updateAddress,
+  deleteAddress,
+  setDefaultAddress,
+  getPaymentMethods,
+  addPaymentMethod,
+  deletePaymentMethod,
+  updateNotificationPreferences,
+  getKYCDocuments,
+  submitKYCDocument,
+  acceptContract,
+  deleteAccount,
+} from '../controllers/userController';
+import { authMiddleware } from '../middleware/auth';
+import {
+  validateUpdateUserProfile,
+  validateChangePassword,
+  validateAddAddress,
+  validateUpdateAddress,
+  validateAddPaymentMethod,
+  validateUpdateNotificationPreferences,
+  validateSubmitKYCDocument,
+  validateSubmitContractAcceptance,
+} from '../middleware/validation';
+
+const router = Router();
+
+// All user routes require auth
+router.use(authMiddleware);
+
+// Profile routes
+router.get('/me', getUserProfile);
+router.patch('/me', validateUpdateUserProfile, updateUserProfile);
+router.delete('/me', deleteAccount);
+
+// Password route
+router.post('/me/change-password', validateChangePassword, changePassword);
+
+// Address routes
+router.get('/me/addresses', getAddresses);
+router.post('/me/addresses', validateAddAddress, createAddress);
+router.patch('/me/addresses/:addressId', validateUpdateAddress, updateAddress);
+router.delete('/me/addresses/:addressId', deleteAddress);
+router.patch('/me/addresses/:addressId/set-default', setDefaultAddress);
+
+// Payment method routes
+router.get('/me/payment-methods', getPaymentMethods);
+router.post('/me/payment-methods', validateAddPaymentMethod, addPaymentMethod);
+router.delete('/me/payment-methods/:methodId', deletePaymentMethod);
+
+// Notification preferences
+router.patch(
+  '/me/notification-preferences',
+  validateUpdateNotificationPreferences,
+  updateNotificationPreferences
+);
+
+// KYC documents
+router.get('/me/kyc-documents', getKYCDocuments);
+router.post('/me/kyc-documents', validateSubmitKYCDocument, submitKYCDocument);
+
+// Contract acceptance
+router.post(
+  '/me/contract-acceptance',
+  validateSubmitContractAcceptance,
+  acceptContract
+);
+
+export default router;

@@ -1,6 +1,11 @@
 import express from 'express';
 import cors from 'cors';
 import authRoutes from '@routes/auth';
+import workerRoutes from '@routes/workers';
+import bookingRoutes from '@routes/bookings';
+import paymentRoutes from '@routes/payments';
+import userRoutes from '@routes/users';
+import messageRoutes from '@routes/messages';
 import { errorHandler } from '@middleware/errorHandler';
 
 const app = express();
@@ -22,6 +27,11 @@ app.use(
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/workers', workerRoutes);
+app.use('/api/bookings', bookingRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/messages', messageRoutes);
 
 // Health check
 app.get('/health', (_req, res) => {

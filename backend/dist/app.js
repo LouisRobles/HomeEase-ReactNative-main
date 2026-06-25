@@ -6,6 +6,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const auth_1 = __importDefault(require("@routes/auth"));
+const workers_1 = __importDefault(require("@routes/workers"));
+const bookings_1 = __importDefault(require("@routes/bookings"));
+const payments_1 = __importDefault(require("@routes/payments"));
+const users_1 = __importDefault(require("@routes/users"));
+const messages_1 = __importDefault(require("@routes/messages"));
 const errorHandler_1 = require("@middleware/errorHandler");
 const app = (0, express_1.default)();
 const jsonBodyLimit = process.env.JSON_BODY_LIMIT || '1mb';
@@ -22,6 +27,11 @@ app.use((0, cors_1.default)({
 }));
 // Routes
 app.use('/api/auth', auth_1.default);
+app.use('/api/workers', workers_1.default);
+app.use('/api/bookings', bookings_1.default);
+app.use('/api/payments', payments_1.default);
+app.use('/api/users', users_1.default);
+app.use('/api/messages', messages_1.default);
 // Health check
 app.get('/health', (_req, res) => {
     res.json({ status: 'OK' });

@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import prisma from '@config/database';
 import { hashPassword, comparePassword } from '@utils/passwordHash';
-import { generateToken, verifyToken } from '@utils/jwt';
+import { generateToken } from '@utils/jwt';
 import { validateEmail, validatePassword, validatePhone, validateOtp } from '@utils/validators';
 import { errorResponse } from '@utils/errorResponse';
 import {
@@ -21,7 +21,6 @@ import {
   revokeRefreshToken,
   revokeAllRefreshTokens,
 } from '@utils/otpService';
-import { TokenType } from '@prisma/client';
 import crypto from 'crypto';
 
 type SignupRole = 'CLIENT' | 'WORKER';
